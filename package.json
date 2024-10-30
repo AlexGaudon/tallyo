@@ -8,8 +8,10 @@
     "start": "vinxi start",
     "lint": "eslint .",
     "format": "prettier --write . \"!**/{routeTree.gen.ts,pnpm-lock.yaml,drizzle}\"",
-    "db": "drizzle-kit",
-    "ui": "pnpm dlx shadcn@latest"
+    "db": "drizzle-kit push",
+    "ui": "pnpm dlx shadcn@latest",
+    "db:auth": "bunx @better-auth/cli generate --config ./app/server/auth.ts && bunx @better-auth/cli migrate --config ./app/server/auth.ts",
+    "dev:db": "docker compose -f docker-compose.dev.yml down && rm -rf db && docker compose -f docker-compose.dev.yml up -d"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.1",

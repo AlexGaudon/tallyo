@@ -12,26 +12,28 @@ import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { getAuth } from "~/server/functions";
 import appCss from "~/styles/app.css?url";
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  beforeLoad: async () => {
-    const auth = await getAuth();
-    return { auth };
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
+  {
+    beforeLoad: async () => {
+      const auth = await getAuth();
+      return { auth };
+    },
+    component: RootComponent,
+    meta: () => [
+      {
+        charSet: "utf-8",
+      },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1",
+      },
+      {
+        title: "TanStarter Better Auth",
+      },
+    ],
+    links: () => [{ rel: "stylesheet", href: appCss }],
   },
-  component: RootComponent,
-  meta: () => [
-    {
-      charSet: "utf-8",
-    },
-    {
-      name: "viewport",
-      content: "width=device-width, initial-scale=1",
-    },
-    {
-      title: "TanStarter Better Auth",
-    },
-  ],
-  links: () => [{ rel: "stylesheet", href: appCss }],
-});
+);
 
 function RootComponent() {
   return (
