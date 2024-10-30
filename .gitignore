@@ -1,3 +1,6 @@
 .env
 
 node_modules
+
+db
+better-auth_migrations/
