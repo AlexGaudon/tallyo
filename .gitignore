@@ -1,5 +1,6 @@
 .env
-
+.vinxi
+.output
 node_modules
 
 db
