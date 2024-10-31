@@ -44,26 +44,22 @@ export function CreateCategoryForm() {
       treatAsIncome: false,
     },
     onSubmit: async ({ value }) => {
+      setOpen(false);
+      form.reset();
+      setPreview({
+        text: "Preview",
+        color: colors[0],
+      });
       await mutateAsync({
         categoryName: value.categoryName,
         color: value.color,
       });
-
-      form.reset();
     },
   });
 
   const [open, setOpen] = useState(false);
 
-  const { mutateAsync, isError, error, isSuccess } = categoriesMutations.create(
-    () => {
-      setOpen(false);
-      setPreview({
-        text: "Preview",
-        color: colors[0],
-      });
-    }
-  );
+  const { mutateAsync, isError, error } = categoriesMutations.create();
 
   return (
     <Dialog
@@ -217,7 +213,7 @@ export function CreateCategoryForm() {
                     <Button type="submit">Submit</Button>
                   </div>
                 </form>
-              </div>{" "}
+              </div>
             </div>
           </div>
         </DialogHeader>

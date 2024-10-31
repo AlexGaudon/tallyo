@@ -10,6 +10,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
 import Navbar from "~/components/NavBar";
+import { Toaster } from "~/components/ui/toaster";
 import icon from "~/favicon.ico?url";
 import { getAuth } from "~/server/functions";
 import appCss from "~/styles/app.css?url";
@@ -60,6 +61,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Meta />
       </Head>
       <Body>
+        <Toaster />
         <Navbar />
         {children}
         <ScrollRestoration />
