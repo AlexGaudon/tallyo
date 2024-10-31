@@ -65,8 +65,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Navbar />
         {children}
         <ScrollRestoration />
-        <TanStackRouterDevtools position="bottom-right" />
-        <ReactQueryDevtools buttonPosition="bottom-left" />
+        {import.meta.env.DEV && (
+          <>
+            <TanStackRouterDevtools position="bottom-right" />
+            <ReactQueryDevtools buttonPosition="bottom-left" />
+          </>
+        )}
         <Scripts />
         {/* eslint-disable-next-line @eslint-react/dom/no-dangerously-set-innerhtml */}
         <script
