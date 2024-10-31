@@ -1,16 +1,14 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
   Outlet,
   ScrollRestoration,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { Body, Head, Html, Meta, Scripts } from "@tanstack/start";
-
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import React from "react";
 
 import Navbar from "~/components/NavBar";
-import { Toaster } from "~/components/ui/toaster";
 import icon from "~/favicon.ico?url";
 import { getAuth } from "~/server/functions";
 import appCss from "~/styles/app.css?url";
@@ -54,6 +52,30 @@ function RootComponent() {
   );
 }
 
+const TanStackRouterDevtools =
+  process.env.NODE_ENV === "production"
+    ? () => null // Render nothing in production
+    : React.lazy(() =>
+        // Lazy load in development
+        import("@tanstack/router-devtools").then((res) => ({
+          default: res.TanStackRouterDevtools,
+          // For Embedded Mode
+          // default: res.TanStackRouterDevtoolsPanel
+        }))
+      );
+
+const TanStackQueryDevTools =
+  process.env.NODE_ENV === "production"
+    ? () => null // Render nothing in production
+    : React.lazy(() =>
+        // Lazy load in development
+        import("@tanstack/react-query-devtools").then((res) => ({
+          default: res.ReactQueryDevtools,
+          // For Embedded Mode
+          // default: res.TanStackRouterDevtoolsPanel
+        }))
+      );
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <Html>
@@ -61,16 +83,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Meta />
       </Head>
       <Body>
-        <Toaster />
         <Navbar />
         {children}
         <ScrollRestoration />
-        {import.meta.env.DEV && (
-          <>
-            <TanStackRouterDevtools position="bottom-right" />
-            <ReactQueryDevtools buttonPosition="bottom-left" />
-          </>
-        )}
+        <TanStackRouterDevtools position="bottom-right" />
+        <ReactQueryDevtools buttonPosition="bottom-left" />
         <Scripts />
         {/* eslint-disable-next-line @eslint-react/dom/no-dangerously-set-innerhtml */}
         <script

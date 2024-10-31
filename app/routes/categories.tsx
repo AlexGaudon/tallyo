@@ -36,7 +36,7 @@ export const Route = createFileRoute("/categories")({
 function CategoriesPage() {
   const { data } = useQuery(categoriesQueries.getUserCategories());
 
-  const { mutate: editCategory } = categoriesMutations.edit();
+  const { mutate: updateCategory } = categoriesMutations.update();
   const { mutate: deleteCategory } = categoriesMutations.delete();
 
   return (
@@ -85,7 +85,7 @@ function CategoriesPage() {
                 <Switch
                   checked={category.hideFromInsights || false}
                   onCheckedChange={(checked) => {
-                    editCategory({
+                    updateCategory({
                       id: category.id,
                       hideFromInsights: checked,
                     });
@@ -97,7 +97,7 @@ function CategoriesPage() {
                 <Switch
                   checked={category.treatAsIncome || false}
                   onCheckedChange={(checked) => {
-                    editCategory({
+                    updateCategory({
                       id: category.id,
                       treatAsIncome: checked,
                     });

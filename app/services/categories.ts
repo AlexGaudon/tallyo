@@ -34,7 +34,7 @@ export const categoriesQueries = {
 
 export const categoriesMutations = {
     create: (onSuccess?: () => void) => useCreateCategoryMutation(onSuccess),
-    edit: (onSuccess?: () => void) => useEditCategoryMutation(onSuccess),
+    update: (onSuccess?: () => void) => useEditCategoryMutation(onSuccess),
     delete: (onSuccess?: () => void) => useDeleteCategoryMutation(onSuccess)
 }
 

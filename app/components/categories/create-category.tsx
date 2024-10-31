@@ -14,7 +14,6 @@ import { HexColorPicker } from "react-colorful";
 
 import { useDebounce } from "@uidotdev/usehooks";
 
-import { Checkbox } from "~/components/ui/checkbox";
 import { categoriesMutations } from "~/services/categories";
 import { Card, CardContent } from "../ui/card";
 import {
@@ -40,8 +39,6 @@ export function CreateCategoryForm() {
     defaultValues: {
       categoryName: "",
       color: colors[0],
-      hideFromInsights: false,
-      treatAsIncome: false,
     },
     onSubmit: async ({ value }) => {
       setOpen(false);
@@ -176,36 +173,6 @@ export function CreateCategoryForm() {
                             </div>
                           </div>
                         </>
-                      )}
-                    />
-                  </div>
-                  <div className="gap-x-4 grid grid-cols-2">
-                    <form.Field
-                      name="treatAsIncome"
-                      children={(field) => (
-                        <div className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
-                          <Checkbox
-                            checked={field.state.value}
-                            onCheckedChange={(e: any) => field.handleChange(e)}
-                          />
-                          <div className="space-y-1 leading-none">
-                            <Label>Treat As Income</Label>
-                          </div>
-                        </div>
-                      )}
-                    />
-                    <form.Field
-                      name="hideFromInsights"
-                      children={(field) => (
-                        <div className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
-                          <Checkbox
-                            checked={field.state.value}
-                            onCheckedChange={(e: any) => field.handleChange(e)}
-                          />
-                          <div className="space-y-1 leading-none">
-                            <Label>Hide From Insights</Label>
-                          </div>
-                        </div>
                       )}
                     />
                   </div>
