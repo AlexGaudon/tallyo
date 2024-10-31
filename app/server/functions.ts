@@ -1,10 +1,10 @@
-import { createServerFn, json } from "@tanstack/start";
-import { auth } from "./auth";
+import { createServerFn } from "@tanstack/start";
+import { getEvent } from "vinxi/http";
+import type { Auth } from "./auth";
 
-export const getAuth = createServerFn("GET", async (_, ctx) => {
-  const authInfo = await auth.api.getSession({
-    headers: ctx.request.headers,
-  });
 
-  return json(authInfo);
+export const getAuth = createServerFn("GET", async (): Promise<Auth> => {
+  const event = getEvent();
+
+  return event.context.auth;
 });

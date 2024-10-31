@@ -1,5 +1,9 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, Session, User } from "better-auth";
 import { dbPool } from "./db";
+
+export type Auth =
+  | { isAuthenticated: false; user: null; session: null }
+  | { isAuthenticated: true; user: User; session: Session };
 
 export const auth = betterAuth({
   database: dbPool,

@@ -6,8 +6,10 @@ import { DefaultCatchBoundary } from "./components/DefaultCatchBoundary";
 import { NotFound } from "./components/NotFound";
 import { routeTree } from "./routeTree.gen";
 
+import { SuperJSON } from "superjson";
+
 export function createRouter() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({});
 
   return routerWithQueryClient(
     createTanStackRouter({
@@ -16,8 +18,9 @@ export function createRouter() {
       defaultPreload: "intent",
       defaultErrorComponent: DefaultCatchBoundary,
       defaultNotFoundComponent: NotFound,
+      transformer: SuperJSON,
     }),
-    queryClient,
+    queryClient
   );
 }
 

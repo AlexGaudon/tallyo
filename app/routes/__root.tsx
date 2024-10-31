@@ -9,6 +9,8 @@ import { Body, Head, Html, Meta, Scripts } from "@tanstack/start";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
+import Navbar from "~/components/NavBar";
+import icon from "~/favicon.ico?url";
 import { getAuth } from "~/server/functions";
 import appCss from "~/styles/app.css?url";
 
@@ -28,11 +30,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStarter Better Auth",
+        title: "Tallyo | Financial Insights",
       },
     ],
-    links: () => [{ rel: "stylesheet", href: appCss }],
-  },
+    links: () => [
+      { rel: "stylesheet", href: appCss },
+      {
+        rel: "icon",
+        type: "image/x-icon",
+        // href: "/images/favicon.ico",
+        href: icon,
+      },
+    ],
+  }
 );
 
 function RootComponent() {
@@ -50,6 +60,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Meta />
       </Head>
       <Body>
+        <Navbar />
         {children}
         <ScrollRestoration />
         <TanStackRouterDevtools position="bottom-right" />

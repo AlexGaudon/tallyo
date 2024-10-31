@@ -5,7 +5,7 @@ import { authClient } from "~/lib/authClient";
 export const Route = createFileRoute("/signin")({
   component: AuthPage,
   beforeLoad: async ({ context }) => {
-    if (context.auth) {
+    if (context.auth.isAuthenticated) {
       throw redirect({
         to: "/dashboard",
       });
@@ -15,8 +15,8 @@ export const Route = createFileRoute("/signin")({
 
 export default function AuthPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-8 rounded-xl border bg-card p-10">
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="flex flex-col items-center gap-8 bg-card p-10 border rounded-xl">
         Logo here
         <Button
           onClick={async () => {
