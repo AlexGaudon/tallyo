@@ -67,9 +67,11 @@ function PayeesRoute() {
   const { data } = useQuery(payeeQueries.getUserPayees());
 
   return (
-    <div className="gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 mb-12">
-      {data?.map((payee) => <PayeeDetail key={payee.id} {...payee} />)}
-      <CreatePayee />
+    <div className="my-2">
+      <div className="gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 mb-12">
+        {data?.map((payee) => <PayeeDetail key={payee.id} {...payee} />)}
+        <CreatePayee />
+      </div>
     </div>
   );
 }

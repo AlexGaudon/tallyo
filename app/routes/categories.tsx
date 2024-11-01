@@ -40,7 +40,7 @@ function CategoriesPage() {
   const { mutate: deleteCategory } = categoriesMutations.delete();
 
   return (
-    <div>
+    <div className="my-2">
       <div className="gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 mb-12">
         {data?.map((category) => (
           <Card key={category.id}>
