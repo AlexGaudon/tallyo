@@ -14,6 +14,7 @@ import { HexColorPicker } from "react-colorful";
 
 import { useDebounce } from "@uidotdev/usehooks";
 
+import { DialogTitle } from "@radix-ui/react-dialog";
 import { categoriesMutations } from "~/services/categories";
 import { Card, CardContent } from "../ui/card";
 import {
@@ -41,8 +42,6 @@ export function CreateCategoryForm() {
       color: colors[0],
     },
     onSubmit: async ({ value }) => {
-      setOpen(false);
-      form.reset();
       setPreview({
         text: "Preview",
         color: colors[0],
@@ -56,7 +55,10 @@ export function CreateCategoryForm() {
 
   const [open, setOpen] = useState(false);
 
-  const { mutateAsync, isError, error } = categoriesMutations.create();
+  const { mutateAsync, isError, error } = categoriesMutations.create(() => {
+    setOpen(false);
+    form.reset();
+  });
 
   return (
     <Dialog
@@ -79,12 +81,14 @@ export function CreateCategoryForm() {
             {isError && <p>{error.message}</p>}
             <div className="flex justify-center items-center py-2">
               <div className="gap-6 grid mx-auto w-[350px]">
-                <div className="gap-2 grid text-center">
-                  <h1 className="font-bold text-3xl">Create a Category</h1>
-                  <p className="text-balance text-muted-foreground">
-                    Enter a name and pick a color
-                  </p>
-                </div>
+                <DialogTitle>
+                  <div className="gap-2 grid text-center">
+                    <h1 className="font-bold text-3xl">Create a Category</h1>
+                    <p className="text-balance text-muted-foreground">
+                      Enter a name and pick a color
+                    </p>
+                  </div>
+                </DialogTitle>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -96,6 +100,7 @@ export function CreateCategoryForm() {
                   {debouncedPreview.text !== "" && (
                     <div className="flex items-center space-x-2 mx-auto">
                       <CategoryBadge
+                        link={false}
                         color={debouncedPreview.color}
                         name={debouncedPreview.text}
                       />

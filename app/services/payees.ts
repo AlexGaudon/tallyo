@@ -110,6 +110,7 @@ export const payeeQueries = {
 
 export const payeeMutations = {
   create: (onSuccess?: () => void) => useCreatePayeeMutation(onSuccess),
+  delete: (onSuccess?: () => void) => useDeletePayeeMigration(onSuccess),
 } as const;
 
 // create
@@ -153,16 +154,12 @@ const createUserPayee = createServerFn(
     } catch (e) {
       console.error(e);
       const message = (e as Error).message;
-      return json(
-        {
-          message: message.includes("duplicate key value")
-            ? "A category with this name already exists."
-            : message,
-        },
-        {
-          status: 500,
-        },
-      );
+      return json({
+        message: 'Bad'
+      }, {
+        status: 500
+      })
+
     }
   },
 );
@@ -171,6 +168,57 @@ export const useCreatePayeeMutation = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createUserPayee,
+    onSuccess: async () => {
+      await queryClient.cancelQueries({ queryKey: ["payees", 'all'] });
+      await queryClient.invalidateQueries({ queryKey: ["payees", 'all'] });
+      onSuccess?.();
+    },
+  });
+};
+
+// delete
+
+
+export const deletePayeeSchema = z.object({
+  id: z.string(),
+});
+
+const deleteUserPayee = createServerFn(
+  "POST",
+  async (params: z.infer<typeof deletePayeeSchema>) => {
+    const event = getEvent();
+    const auth = event.context.auth;
+
+    if (!auth.isAuthenticated) {
+      throw redirect({
+        to: "/signin",
+      });
+    }
+
+    const res = await db
+      .delete(payee)
+      .where(
+        and(eq(payee.id, params.id), eq(payee.userId, auth.user.id)),
+      )
+      .execute();
+
+    console.log(res)
+
+    return json(
+      {
+        message: "Deleted.",
+      },
+      {
+        status: 200,
+      },
+    );
+  },
+);
+
+export const useDeletePayeeMigration = (onSuccess?: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteUserPayee,
     onSuccess: async () => {
       await queryClient.cancelQueries({ queryKey: ["payees", 'all'] });
       await queryClient.invalidateQueries({ queryKey: ["payees", 'all'] });

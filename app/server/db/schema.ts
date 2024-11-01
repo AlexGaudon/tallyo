@@ -80,7 +80,10 @@ export const payee = pgTable('payee',
     categoryId: text('category_id').references(() => category.id),
     createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
-  }
+  },
+  (table) => ({
+    uniqueExternalIdPerUser: unique().on(table.name, table.userId),
+  })
 )
 
 export const payeeKeyword = pgTable('payee_keyword', {

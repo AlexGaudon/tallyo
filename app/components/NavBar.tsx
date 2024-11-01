@@ -102,7 +102,11 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
   ));
 
   if (asChild) {
-    return linkElements.map((x) => <SheetClose asChild>{x}</SheetClose>);
+    return linkElements.map((x) => (
+      <SheetClose key={x.key} asChild>
+        {x}
+      </SheetClose>
+    ));
   }
 
   return linkElements;

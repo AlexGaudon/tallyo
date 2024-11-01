@@ -1,11 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { ChevronRight, ShoppingBag } from "lucide-react";
+import { ShoppingBag, TrashIcon } from "lucide-react";
 import { CategoryBadge } from "~/components/categories/category-badge";
 import { CreatePayee } from "~/components/payees/create-payee";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { categoriesQueries } from "~/services/categories";
-import { payeeQueries, UserPayee } from "~/services/payees";
+import { payeeMutations, payeeQueries, UserPayee } from "~/services/payees";
 
 export const Route = createFileRoute("/payees/")({
   component: PayeesRoute,
@@ -23,20 +34,21 @@ export const Route = createFileRoute("/payees/")({
 });
 
 function PayeeDetail(props: UserPayee) {
+  const { mutate: deletePayee } = payeeMutations.delete();
   return (
     <Card
       className="hover:bg-accent/50 w-full max-w-md transition-colors cursor-pointer"
       key={props.id}
     >
-      <Link
-        to="/payees/$id"
-        params={{
-          id: props.id,
-        }}
-      >
-        <CardContent className="p-6">
-          <div className="flex justify-between items-center">
-            <div className="space-y-4">
+      <CardContent className="p-6">
+        <div className="flex justify-between items-center">
+          <div className="space-y-4">
+            <Link
+              to="/payees/$id"
+              params={{
+                id: props.id,
+              }}
+            >
               <div className="flex items-center gap-3">
                 <div className="bg-primary/10 p-3 rounded-full">
                   <ShoppingBag className="w-6 h-6 text-primary" />
@@ -54,11 +66,40 @@ function PayeeDetail(props: UserPayee) {
                   </div>
                 </div>
               </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </Link>
           </div>
-        </CardContent>
-      </Link>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <TrashIcon />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  this category and unassign and transactions that were related
+                  to it.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    deletePayee({
+                      id: props.id,
+                    });
+                  }}
+                >
+                  Delete
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </CardContent>
     </Card>
   );
 }
