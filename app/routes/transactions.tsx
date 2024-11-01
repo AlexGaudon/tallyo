@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { categoriesQueries } from "~/services/categories";
 import { transactionQueries } from "~/services/transactions";
 
 export const Route = createFileRoute("/transactions")({
@@ -18,7 +17,7 @@ export const Route = createFileRoute("/transactions")({
 });
 
 function TransactionsPage() {
-  const { data } = useQuery(categoriesQueries.getUserCategories());
+  const { data } = useQuery(transactionQueries.getUserTransactions());
 
   return <pre>{JSON.stringify(data, null, 2)}</pre>;
 }
