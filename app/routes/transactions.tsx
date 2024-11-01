@@ -112,7 +112,7 @@ function TransactionsPage() {
                     <AmountDisplay amount={transaction.amount} />
                   </TableCell>
                   <TableCell>
-                    {transaction.categoryId === null ? (
+                    {transaction.category?.id === null ? (
                       <CategoryBadge
                         name="Uncategorized"
                         color="#ff0000"
@@ -120,8 +120,8 @@ function TransactionsPage() {
                       />
                     ) : (
                       <CategoryBadge
-                        name={transaction.categoryName!}
-                        color={transaction.categoryColor!}
+                        name={transaction.category?.name!}
+                        color={transaction.category?.color!}
                         link={true}
                       />
                     )}

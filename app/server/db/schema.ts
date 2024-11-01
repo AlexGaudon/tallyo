@@ -83,6 +83,19 @@ export const payee = pgTable('payee',
   }
 )
 
+export const payeeKeyword = pgTable('payee_keyword', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').references(() => user.id, {
+    onDelete: 'cascade'
+  }),
+  payeeId: text('payee_id').references(() => payee.id, {
+    onDelete: 'cascade'
+  }),
+  keyword: text('keyword').notNull(),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+})
+
 export type TransactionSchema = InferInsertModel<typeof transaction>
 
 export const transaction = pgTable(
@@ -93,7 +106,9 @@ export const transaction = pgTable(
     vendor: text("vendor").notNull(),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id),
+      .references(() => user.id, {
+        onDelete: 'cascade'
+      }),
     date: timestamp("date").notNull(),
     payee: text('payee'),
     reviewed: boolean("reviewed").default(sql`false`).notNull(),

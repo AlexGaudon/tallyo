@@ -81,7 +81,7 @@ function CategoriesPage() {
                 </AlertDialog>
               </div>
               <div className="flex justify-between items-center">
-                <Label className="text-sm">Include in Insights</Label>
+                <Label className="text-sm">Hide From Insights</Label>
                 <Switch
                   checked={category.hideFromInsights || false}
                   onCheckedChange={(checked) => {

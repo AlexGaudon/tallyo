@@ -13,11 +13,12 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as TransactionsImport } from './routes/transactions'
 import { Route as SigninImport } from './routes/signin'
-import { Route as PayeesImport } from './routes/payees'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as CategoriesImport } from './routes/categories'
 import { Route as IndexImport } from './routes/index'
+import { Route as PayeesIndexImport } from './routes/payees.index'
 import { Route as DashboardIndexImport } from './routes/dashboard/index'
+import { Route as PayeesIdImport } from './routes/payees.$id'
 
 // Create/Update Routes
 
@@ -30,12 +31,6 @@ const TransactionsRoute = TransactionsImport.update({
 const SigninRoute = SigninImport.update({
   id: '/signin',
   path: '/signin',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const PayeesRoute = PayeesImport.update({
-  id: '/payees',
-  path: '/payees',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -57,10 +52,22 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const PayeesIndexRoute = PayeesIndexImport.update({
+  id: '/payees/',
+  path: '/payees/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const DashboardIndexRoute = DashboardIndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+
+const PayeesIdRoute = PayeesIdImport.update({
+  id: '/payees/$id',
+  path: '/payees/$id',
+  getParentRoute: () => rootRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -88,13 +95,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
     }
-    '/payees': {
-      id: '/payees'
-      path: '/payees'
-      fullPath: '/payees'
-      preLoaderRoute: typeof PayeesImport
-      parentRoute: typeof rootRoute
-    }
     '/signin': {
       id: '/signin'
       path: '/signin'
@@ -109,12 +109,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TransactionsImport
       parentRoute: typeof rootRoute
     }
+    '/payees/$id': {
+      id: '/payees/$id'
+      path: '/payees/$id'
+      fullPath: '/payees/$id'
+      preLoaderRoute: typeof PayeesIdImport
+      parentRoute: typeof rootRoute
+    }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexImport
       parentRoute: typeof DashboardImport
+    }
+    '/payees/': {
+      id: '/payees/'
+      path: '/payees'
+      fullPath: '/payees'
+      preLoaderRoute: typeof PayeesIndexImport
+      parentRoute: typeof rootRoute
     }
   }
 }
@@ -137,19 +151,21 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/payees': typeof PayeesRoute
   '/signin': typeof SigninRoute
   '/transactions': typeof TransactionsRoute
+  '/payees/$id': typeof PayeesIdRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/payees': typeof PayeesIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
-  '/payees': typeof PayeesRoute
   '/signin': typeof SigninRoute
   '/transactions': typeof TransactionsRoute
+  '/payees/$id': typeof PayeesIdRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/payees': typeof PayeesIndexRoute
 }
 
 export interface FileRoutesById {
@@ -157,10 +173,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/payees': typeof PayeesRoute
   '/signin': typeof SigninRoute
   '/transactions': typeof TransactionsRoute
+  '/payees/$id': typeof PayeesIdRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/payees/': typeof PayeesIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -169,27 +186,30 @@ export interface FileRouteTypes {
     | '/'
     | '/categories'
     | '/dashboard'
-    | '/payees'
     | '/signin'
     | '/transactions'
+    | '/payees/$id'
     | '/dashboard/'
+    | '/payees'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/categories'
-    | '/payees'
     | '/signin'
     | '/transactions'
+    | '/payees/$id'
     | '/dashboard'
+    | '/payees'
   id:
     | '__root__'
     | '/'
     | '/categories'
     | '/dashboard'
-    | '/payees'
     | '/signin'
     | '/transactions'
+    | '/payees/$id'
     | '/dashboard/'
+    | '/payees/'
   fileRoutesById: FileRoutesById
 }
 
@@ -197,18 +217,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRouteWithChildren
-  PayeesRoute: typeof PayeesRoute
   SigninRoute: typeof SigninRoute
   TransactionsRoute: typeof TransactionsRoute
+  PayeesIdRoute: typeof PayeesIdRoute
+  PayeesIndexRoute: typeof PayeesIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRouteWithChildren,
-  PayeesRoute: PayeesRoute,
   SigninRoute: SigninRoute,
   TransactionsRoute: TransactionsRoute,
+  PayeesIdRoute: PayeesIdRoute,
+  PayeesIndexRoute: PayeesIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -226,9 +248,10 @@ export const routeTree = rootRoute
         "/",
         "/categories",
         "/dashboard",
-        "/payees",
         "/signin",
-        "/transactions"
+        "/transactions",
+        "/payees/$id",
+        "/payees/"
       ]
     },
     "/": {
@@ -243,18 +266,21 @@ export const routeTree = rootRoute
         "/dashboard/"
       ]
     },
-    "/payees": {
-      "filePath": "payees.tsx"
-    },
     "/signin": {
       "filePath": "signin.tsx"
     },
     "/transactions": {
       "filePath": "transactions.tsx"
     },
+    "/payees/$id": {
+      "filePath": "payees.$id.tsx"
+    },
     "/dashboard/": {
       "filePath": "dashboard/index.tsx",
       "parent": "/dashboard"
+    },
+    "/payees/": {
+      "filePath": "payees.index.tsx"
     }
   }
 }
