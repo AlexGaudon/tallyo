@@ -1,6 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { transactionQueries } from "~/services/transactions";
+import AmountDisplay from "~/components/transactions/amount-display";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { transactionQueries } from "../services/transactions";
+
+import { z } from "zod";
+import { CategoryBadge } from "~/components/categories/category-badge";
+import { Button } from "~/components/ui/button";
+
+const transactionSearchSchema = z.object({
+  page: z.number().default(1),
+  filter: z.string().default("").optional(),
+});
 
 export const Route = createFileRoute("/transactions")({
   component: TransactionsPage,
@@ -11,13 +29,108 @@ export const Route = createFileRoute("/transactions")({
       });
     }
     await ctx.context.queryClient.ensureQueryData(
-      transactionQueries.getUserTransactions()
+      transactionQueries.getUserTransactionsPaginated(
+        ctx.search.page,
+        ctx.search.filter
+      )
     );
   },
+  validateSearch: transactionSearchSchema,
 });
 
 function TransactionsPage() {
-  const { data } = useQuery(transactionQueries.getUserTransactions());
+  const search = Route.useSearch();
 
-  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+  const navigate = Route.useNavigate();
+
+  const client = useQueryClient();
+  client.ensureQueryData(
+    transactionQueries.getUserTransactionsPaginated(
+      search.page + 1,
+      search.filter
+    )
+  );
+
+  const { data } = useQuery(
+    transactionQueries.getUserTransactionsPaginated(search.page, search.filter)
+  );
+
+  return (
+    <div>
+      <Button
+        disabled={!data?.hasMore}
+        onClick={() => {
+          navigate({
+            to: ".",
+            search: {
+              page: search.page + 1,
+              filter: search.filter,
+            },
+          });
+        }}
+      >
+        Next Page
+      </Button>
+      <Button
+        disabled={search.page <= 1}
+        onClick={() => {
+          navigate({
+            to: ".",
+            search: {
+              page: (() => {
+                if (search.page === 1) {
+                  return 1;
+                }
+                return search.page - 1;
+              })(),
+              filter: search.filter,
+            },
+          });
+        }}
+      >
+        Prev Page
+      </Button>
+
+      <div className="sm:block hidden">
+        <h1>desktop</h1>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[180px]">Vendor</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead className="hidden md:table-cell">Category</TableHead>
+              <TableHead>Reviewed</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data?.transactions.map((transaction) => {
+              const date = new Date(transaction.date);
+              return (
+                <TableRow key={transaction.id}>
+                  <TableCell>{transaction.vendor}</TableCell>
+                  <TableCell>
+                    <AmountDisplay amount={transaction.amount} />
+                  </TableCell>
+                  <TableCell>
+                    {transaction.categoryId === null ? (
+                      <CategoryBadge name="Uncategorized" color="#ff0000" />
+                    ) : (
+                      <CategoryBadge
+                        name={transaction.categoryName!}
+                        color={transaction.categoryColor!}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell>{transaction.reviewed.toString()}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="sm:hidden">
+        <h1>mobile</h1>
+      </div>
+    </div>
+  );
 }

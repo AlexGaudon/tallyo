@@ -73,3 +73,15 @@ function hslToHex(hue: number, saturation: number, lightness: number): string {
     .toString(16)
     .padStart(2, "0")}${Math.round(blue).toString(16).padStart(2, "0")}`;
 }
+type Transform<T> = {
+  [K in keyof T]: T[K] extends Date ? string : T[K] extends Date | null ? string | null : T[K];
+};
+
+export function transform<T extends Record<string, any>>(data: T): Transform<T> {
+  return Object.fromEntries(
+    Object.entries(data).map(([key, value]) => [
+      key,
+      value instanceof Date ? value.toString() : value
+    ])
+  ) as Transform<T>;
+}

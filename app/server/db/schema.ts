@@ -82,7 +82,7 @@ export const transaction = pgTable(
       .notNull()
       .references(() => user.id),
     date: timestamp("date").notNull(),
-    reviewed: boolean("reviewed").default(sql`false`),
+    reviewed: boolean("reviewed").default(sql`false`).notNull(),
     categoryId: text("category_id").references(() => category.id, {
       onDelete: "set null",
     }),
