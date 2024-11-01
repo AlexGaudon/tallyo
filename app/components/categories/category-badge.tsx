@@ -1,5 +1,11 @@
-export function CategoryBadge(props: { name: string; color: string }) {
-  return (
+import { Link } from "@tanstack/react-router";
+
+export function CategoryBadge(props: {
+  name: string;
+  color: string;
+  link: boolean;
+}) {
+  const element = (
     <div className="flex items-center">
       <div
         style={{
@@ -11,4 +17,10 @@ export function CategoryBadge(props: { name: string; color: string }) {
       <h2 className="text-lg">{props.name}</h2>
     </div>
   );
+
+  if (!props.link) {
+    return element;
+  }
+
+  return <Link to="/categories">{element}</Link>;
 }

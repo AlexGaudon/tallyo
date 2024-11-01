@@ -31,8 +31,8 @@ export const Route = createFileRoute("/transactions")({
     await ctx.context.queryClient.ensureQueryData(
       transactionQueries.getUserTransactionsPaginated(
         ctx.search.page,
-        ctx.search.filter
-      )
+        ctx.search.filter,
+      ),
     );
   },
   validateSearch: transactionSearchSchema,
@@ -47,12 +47,12 @@ function TransactionsPage() {
   client.ensureQueryData(
     transactionQueries.getUserTransactionsPaginated(
       search.page + 1,
-      search.filter
-    )
+      search.filter,
+    ),
   );
 
   const { data } = useQuery(
-    transactionQueries.getUserTransactionsPaginated(search.page, search.filter)
+    transactionQueries.getUserTransactionsPaginated(search.page, search.filter),
   );
 
   return (
@@ -113,11 +113,16 @@ function TransactionsPage() {
                   </TableCell>
                   <TableCell>
                     {transaction.categoryId === null ? (
-                      <CategoryBadge name="Uncategorized" color="#ff0000" />
+                      <CategoryBadge
+                        name="Uncategorized"
+                        color="#ff0000"
+                        link={false}
+                      />
                     ) : (
                       <CategoryBadge
                         name={transaction.categoryName!}
                         color={transaction.categoryColor!}
+                        link={true}
                       />
                     )}
                   </TableCell>

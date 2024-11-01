@@ -20,7 +20,7 @@ export function createRouter() {
       defaultNotFoundComponent: NotFound,
       transformer: SuperJSON,
     }),
-    queryClient
+    queryClient,
   );
 }
 

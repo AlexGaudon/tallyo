@@ -41,7 +41,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: icon,
       },
     ],
-  }
+  },
 );
 
 function RootComponent() {
@@ -61,7 +61,7 @@ const TanStackRouterDevtools =
           default: res.TanStackRouterDevtools,
           // For Embedded Mode
           // default: res.TanStackRouterDevtoolsPanel
-        }))
+        })),
       );
 
 const TanStackQueryDevTools =
@@ -73,7 +73,7 @@ const TanStackQueryDevTools =
           default: res.ReactQueryDevtools,
           // For Embedded Mode
           // default: res.TanStackRouterDevtoolsPanel
-        }))
+        })),
       );
 
 function RootDocument({ children }: { children: React.ReactNode }) {

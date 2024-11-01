@@ -28,7 +28,7 @@ export const Route = createFileRoute("/categories")({
       });
     }
     await ctx.context.queryClient.ensureQueryData(
-      categoriesQueries.getUserCategories()
+      categoriesQueries.getUserCategories(),
     );
   },
 });

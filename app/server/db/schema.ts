@@ -70,6 +70,19 @@ export const category = pgTable(
   })
 );
 
+export type PayeeSchema = InferInsertModel<typeof payee>;
+
+export const payee = pgTable('payee',
+  {
+    id: text('id').primaryKey(),
+    name: text('name'),
+    userId: text('user_id').references(() => user.id),
+    categoryId: text('category_id').references(() => category.id),
+    createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  }
+)
+
 export type TransactionSchema = InferInsertModel<typeof transaction>
 
 export const transaction = pgTable(
@@ -82,6 +95,7 @@ export const transaction = pgTable(
       .notNull()
       .references(() => user.id),
     date: timestamp("date").notNull(),
+    payee: text('payee'),
     reviewed: boolean("reviewed").default(sql`false`).notNull(),
     categoryId: text("category_id").references(() => category.id, {
       onDelete: "set null",

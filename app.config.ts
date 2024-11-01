@@ -1,6 +1,6 @@
 import { defineConfig } from "@tanstack/start/config";
 import type { App } from "vinxi";
-import tsConfigPaths from 'vite-tsconfig-paths';
+import tsConfigPaths from "vite-tsconfig-paths";
 
 const tanstackApp = defineConfig({
   vite: {
@@ -29,6 +29,5 @@ const app: App = {
     routers: routers,
   },
 };
-
 
 export default app;
