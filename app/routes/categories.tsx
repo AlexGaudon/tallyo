@@ -46,7 +46,11 @@ function CategoriesPage() {
           <Card key={category.id}>
             <CardContent className="flex flex-col gap-4 p-4">
               <div className="flex justify-between items-center">
-                <CategoryBadge name={category.name} color={category.color} />
+                <CategoryBadge
+                  name={category.name}
+                  color={category.color}
+                  link={false}
+                />
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive">

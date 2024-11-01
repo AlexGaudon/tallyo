@@ -45,7 +45,7 @@ export const categoriesMutations = {
   create: (onSuccess?: () => void) => useCreateCategoryMutation(onSuccess),
   update: (onSuccess?: () => void) => useEditCategoryMutation(onSuccess),
   delete: (onSuccess?: () => void) => useDeleteCategoryMutation(onSuccess),
-};
+} as const;
 
 // create
 
@@ -108,8 +108,8 @@ export const useCreateCategoryMutation = (onSuccess?: () => void) => {
   return useMutation({
     mutationFn: createUserCategory,
     onSuccess: async () => {
-      await queryClient.cancelQueries({ queryKey: ["categories"] });
-      await queryClient.invalidateQueries({ queryKey: ["categories"] });
+      await queryClient.cancelQueries({ queryKey: ["categories", 'all'] });
+      await queryClient.invalidateQueries({ queryKey: ["categories", 'all'] });
       onSuccess?.();
     },
   });
