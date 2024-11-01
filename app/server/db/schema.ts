@@ -1,5 +1,5 @@
 import { InferInsertModel, sql } from "drizzle-orm";
-import { boolean, date, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
+import { boolean, date, integer, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 
 // AUTH RELATED 
 
@@ -67,5 +67,30 @@ export const category = pgTable(
   },
   (table) => ({
     unq: unique().on(table.name, table.userId),
+  })
+);
+
+export type TransactionSchema = InferInsertModel<typeof transaction>
+
+export const transaction = pgTable(
+  "transaction",
+  {
+    id: text("id").primaryKey(),
+    amount: integer("amount").notNull(),
+    vendor: text("vendor").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+    date: timestamp("date").notNull(),
+    reviewed: boolean("reviewed").default(sql`false`),
+    categoryId: text("category_id").references(() => category.id, {
+      onDelete: "set null",
+    }),
+    externalId: text("external_id"),
+    createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    uniqueExternalIdPerUser: unique().on(table.externalId, table.userId),
   })
 );

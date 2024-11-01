@@ -15,6 +15,7 @@
     "dev:db": "docker compose -f docker-compose.dev.yml down && rm -rf db && docker compose -f docker-compose.dev.yml up -d"
   },
   "dependencies": {
+    "@faker-js/faker": "^9.1.0",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-checkbox": "^1.1.2",
