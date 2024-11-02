@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Plus, Trash2, TrashIcon } from "lucide-react";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { Plus, Trash2, TrashIcon, WrenchIcon } from "lucide-react";
 import { useState } from "react";
 import { CategoryBadge } from "~/components/categories/category-badge";
 import { CreatePayee } from "~/components/payees/create-payee";
@@ -59,9 +59,21 @@ export function PayeeDetail(
               });
             }}
           >
-            <Button variant="ghost">
-              <TrashIcon />
-            </Button>
+            <div className="flex">
+              <Button asChild variant={"ghost"}>
+                <Link
+                  to="/payees/$id"
+                  params={{
+                    id: props.id,
+                  }}
+                >
+                  <WrenchIcon className="w-3 h-3" />
+                </Link>
+              </Button>
+              <Button variant="ghost">
+                <TrashIcon />
+              </Button>
+            </div>
           </DangerConfirm>
         </div>
         {!props.showKeywords && (
@@ -84,12 +96,14 @@ export function PayeeDetail(
                   className="flex items-center gap-1 bg-zinc-700 px-2 py-1 rounded-full text-xs text-zinc-200"
                 >
                   {keyword}
-                  <button
+
+                  <Button
+                    variant="ghost"
                     onClick={() => removeKeyword({ keyword })}
                     className="text-zinc-400 hover:text-zinc-200"
                   >
                     <Trash2 className="w-3 h-3" />
-                  </button>
+                  </Button>
                 </span>
               ))}
             </div>

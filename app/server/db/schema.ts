@@ -6,7 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
-  unique,
+  unique
 } from "drizzle-orm/pg-core";
 
 // AUTH RELATED
@@ -72,9 +72,9 @@ export const category = pgTable(
     createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    unq: unique().on(table.name, table.userId),
-  }),
+  (table) => [
+    unique().on(table.name, table.userId),
+  ]
 );
 
 export type PayeeSchema = InferInsertModel<typeof payee>;
@@ -89,9 +89,9 @@ export const payee = pgTable(
     createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    uniqueExternalIdPerUser: unique().on(table.name, table.userId),
-  }),
+  (table) => [
+    unique().on(table.name, table.userId),
+  ]
 );
 
 export const payeeKeyword = pgTable("payee_keyword", {
@@ -134,7 +134,7 @@ export const transaction = pgTable(
     createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    uniqueExternalIdPerUser: unique().on(table.externalId, table.userId),
-  }),
+  (table) => [
+    unique().on(table.externalId, table.userId),
+  ]
 );

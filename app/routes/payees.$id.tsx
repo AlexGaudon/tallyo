@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
-import { Dialog } from "~/components/ui/dialog";
+import { Dialog, DialogHeader, DialogTrigger } from "~/components/ui/dialog";
 import { payeeQueries } from "~/services/payees";
 import { PayeeDetail } from "./payees.index";
 
@@ -36,7 +36,10 @@ function RouteComponent() {
         setOpen(newValue);
       }}
     >
-      <PayeeDetail {...data} showKeywords={true} />
+      <DialogTrigger></DialogTrigger>
+      <DialogHeader>
+        <PayeeDetail {...data} showKeywords={true} />
+      </DialogHeader>
     </Dialog>
   );
 }
