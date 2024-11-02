@@ -1,6 +1,8 @@
+import { DialogTitle } from "@radix-ui/react-dialog";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { ShoppingBag, TrashIcon } from "lucide-react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Plus, ShoppingBag, TrashIcon, XIcon } from "lucide-react";
+import { useState } from "react";
 import { CategoryBadge } from "~/components/categories/category-badge";
 import { CreatePayee } from "~/components/payees/create-payee";
 import {
@@ -15,6 +17,9 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { DangerConfirm } from "~/components/ui/danger-confirm";
+import { Dialog, DialogContent, DialogTrigger } from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
 import { categoriesQueries } from "~/services/categories";
 import { payeeMutations, payeeQueries, UserPayee } from "~/services/payees";
 
@@ -35,6 +40,14 @@ export const Route = createFileRoute("/payees/")({
 
 function PayeeDetail(props: UserPayee) {
   const { mutate: deletePayee } = payeeMutations.delete();
+
+  const [open, setOpen] = useState(false);
+
+  const [newKeyword, setNewKeyword] = useState("");
+
+  const { mutate: addKeyword } = payeeMutations.addKeyword();
+  const { mutate: removeKeyword } = payeeMutations.removeKeyword();
+
   return (
     <Card
       className="hover:bg-accent/50 w-full max-w-md transition-colors cursor-pointer"
@@ -43,30 +56,92 @@ function PayeeDetail(props: UserPayee) {
       <CardContent className="p-6">
         <div className="flex justify-between items-center">
           <div className="space-y-4">
-            <Link
-              to="/payees/$id"
-              params={{
-                id: props.id,
+            <Dialog
+              open={open}
+              onOpenChange={(newValue) => {
+                setOpen(newValue);
               }}
             >
-              <div className="flex items-center gap-3">
-                <div className="bg-primary/10 p-3 rounded-full">
-                  <ShoppingBag className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-2xl">{props.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    {props.category && (
-                      <CategoryBadge
-                        link={false}
-                        name={props.category?.name}
-                        color={props.category?.color}
-                      />
-                    )}
+              <DialogTrigger asChild>
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <ShoppingBag className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-2xl">{props.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      {props.category && (
+                        <CategoryBadge
+                          link={false}
+                          name={props.category?.name}
+                          color={props.category?.color}
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogTitle>
+                  <div className="gap-2 grid text-center">
+                    <h1 className="font-bold text-3xl">
+                      {props.name} Keywords
+                    </h1>
+                  </div>
+                </DialogTitle>
+                <ul className="flex flex-wrap gap-2">
+                  {props.keywords.map((keyword) => (
+                    <li
+                      key={keyword}
+                      className="flex items-center bg-secondary px-3 py-1 rounded-full text-sm"
+                    >
+                      {keyword}
+                      <DangerConfirm
+                        onConfirm={() =>
+                          removeKeyword({
+                            keyword,
+                          })
+                        }
+                      >
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2 p-0 w-4 h-4"
+                        >
+                          <XIcon className="w-3 h-3" />
+                          <span className="sr-only">Remove {keyword}</span>
+                        </Button>
+                      </DangerConfirm>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex gap-2">
+                  <Input
+                    id="new-keyword"
+                    placeholder="Enter new keyword"
+                    value={newKeyword}
+                    onChange={(e) => setNewKeyword(e.target.value)}
+                    className="col-span-3"
+                  />
+                  <Button
+                    size="sm"
+                    className="col-span-1"
+                    onClick={() => {
+                      if (newKeyword !== "") {
+                        addKeyword({
+                          payeeId: props.id,
+                          keyword: newKeyword,
+                        });
+                      }
+                      setNewKeyword("");
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="sr-only">Add Keyword</span>
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>

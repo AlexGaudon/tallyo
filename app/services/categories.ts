@@ -108,8 +108,8 @@ export const useCreateCategoryMutation = (onSuccess?: () => void) => {
   return useMutation({
     mutationFn: createUserCategory,
     onSuccess: async () => {
-      await queryClient.cancelQueries({ queryKey: ["categories", 'all'] });
-      await queryClient.invalidateQueries({ queryKey: ["categories", 'all'] });
+      await queryClient.cancelQueries({ queryKey: ["categories", "all"] });
+      await queryClient.invalidateQueries({ queryKey: ["categories", "all"] });
       onSuccess?.();
     },
   });

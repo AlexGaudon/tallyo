@@ -73,6 +73,7 @@ function hslToHex(hue: number, saturation: number, lightness: number): string {
     .toString(16)
     .padStart(2, "0")}${Math.round(blue).toString(16).padStart(2, "0")}`;
 }
+
 type Transform<T> = {
   [K in keyof T]: T[K] extends Date
     ? string

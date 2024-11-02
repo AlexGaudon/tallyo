@@ -1,4 +1,8 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn, json } from "@tanstack/start";
 import { and, desc, eq, sql } from "drizzle-orm";
@@ -8,6 +12,27 @@ import { z } from "zod";
 import { transform } from "~/lib/utils";
 import { db } from "~/server/db";
 import { category, payee, payeeKeyword } from "~/server/db/schema";
+
+export const payeeQueries = {
+  getUserPayees: () =>
+    queryOptions({
+      queryKey: ["payees", "all"],
+      queryFn: () => fetchUserPayees(),
+    }),
+  getUserPayeeById: (id: string) =>
+    queryOptions({
+      queryKey: ["payees", "id", id],
+      queryFn: () => fetchUserPayeeById(id),
+    }),
+} as const;
+
+export const payeeMutations = {
+  create: (onSuccess?: () => void) => useCreatePayeeMutation(onSuccess),
+  delete: (onSuccess?: () => void) => useDeletePayeeMigration(onSuccess),
+  addKeyword: (onSuccess?: () => void) =>
+    useCreatePayeeKeywordMutation(onSuccess),
+  removeKeyword: (onSuccess?: () => void) => useDeletePayeeKeyword(onSuccess),
+} as const;
 
 const fetchUserPayees = createServerFn("GET", async (_, ctx) => {
   const event = getEvent();
@@ -94,32 +119,12 @@ const fetchUserPayeeById = createServerFn("GET", async (id: string, ctx) => {
     .map(transform)[0];
 });
 
-export const payeeQueries = {
-  getUserPayees: () =>
-    queryOptions({
-      queryKey: ["payees", "all"],
-      queryFn: () => fetchUserPayees(),
-    }),
-  getUserPayeeById: (id: string) =>
-    queryOptions({
-      queryKey: ["payees", "id", id],
-      queryFn: () => fetchUserPayeeById(id),
-    }),
-} as const;
-
-
-export const payeeMutations = {
-  create: (onSuccess?: () => void) => useCreatePayeeMutation(onSuccess),
-  delete: (onSuccess?: () => void) => useDeletePayeeMigration(onSuccess),
-} as const;
-
 // create
 
 export const createPayeeSchema = z.object({
   payeeName: z.string(),
-  categoryId: z.string()
+  categoryId: z.string(),
 });
-
 
 const createUserPayee = createServerFn(
   "POST",
@@ -140,7 +145,7 @@ const createUserPayee = createServerFn(
           id: uuidv7(),
           userId: auth.user?.id,
           name: params.payeeName,
-          categoryId: params.categoryId
+          categoryId: params.categoryId,
         })
         .execute();
       return json(
@@ -154,12 +159,14 @@ const createUserPayee = createServerFn(
     } catch (e) {
       console.error(e);
       const message = (e as Error).message;
-      return json({
-        message: 'Bad'
-      }, {
-        status: 500
-      })
-
+      return json(
+        {
+          message: "Bad",
+        },
+        {
+          status: 500,
+        },
+      );
     }
   },
 );
@@ -169,15 +176,120 @@ export const useCreatePayeeMutation = (onSuccess?: () => void) => {
   return useMutation({
     mutationFn: createUserPayee,
     onSuccess: async () => {
-      await queryClient.cancelQueries({ queryKey: ["payees", 'all'] });
-      await queryClient.invalidateQueries({ queryKey: ["payees", 'all'] });
+      await queryClient.cancelQueries({ queryKey: ["payees", "all"] });
+      await queryClient.invalidateQueries({ queryKey: ["payees", "all"] });
+      onSuccess?.();
+    },
+  });
+};
+
+// add keyword
+
+export const createPayeeKeywordSchema = z.object({
+  payeeId: z.string(),
+  keyword: z.string(),
+});
+
+const createUserPayeeKeyword = createServerFn(
+  "POST",
+  async (params: z.infer<typeof createPayeeKeywordSchema>) => {
+    const event = getEvent();
+    const auth = event.context.auth;
+
+    if (!auth.isAuthenticated) {
+      throw redirect({
+        to: "/signin",
+      });
+    }
+
+    try {
+      await db
+        .insert(payeeKeyword)
+        .values({
+          id: uuidv7(),
+          userId: auth.user?.id,
+          keyword: params.keyword,
+          payeeId: params.payeeId,
+        })
+        .execute();
+
+      return {
+        message: "Created.",
+      };
+    } catch (e) {
+      console.error(e);
+      const message = (e as Error).message;
+      return {
+        message: message,
+      };
+    }
+  },
+);
+
+export const useCreatePayeeKeywordMutation = (onSuccess?: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createUserPayeeKeyword,
+    onSuccess: async () => {
+      await queryClient.cancelQueries({ queryKey: ["payees", "all"] });
+      await queryClient.invalidateQueries({ queryKey: ["payees", "all"] });
+      onSuccess?.();
+    },
+  });
+};
+
+// delete keyword
+
+export const deleteKeywordSchema = z.object({
+  keyword: z.string(),
+});
+
+const deleteUserKeyword = createServerFn(
+  "POST",
+  async (params: z.infer<typeof deleteKeywordSchema>) => {
+    const event = getEvent();
+    const auth = event.context.auth;
+
+    if (!auth.isAuthenticated) {
+      throw redirect({
+        to: "/signin",
+      });
+    }
+
+    await db
+      .delete(payeeKeyword)
+      .where(
+        and(
+          eq(payeeKeyword.keyword, params.keyword),
+          eq(payeeKeyword.userId, auth.user.id),
+        ),
+      )
+      .execute();
+
+    return json(
+      {
+        message: "Deleted.",
+      },
+      {
+        status: 200,
+      },
+    );
+  },
+);
+
+export const useDeletePayeeKeyword = (onSuccess?: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteUserKeyword,
+    onSuccess: async () => {
+      await queryClient.cancelQueries({ queryKey: ["payees", "all"] });
+      await queryClient.invalidateQueries({ queryKey: ["payees", "all"] });
       onSuccess?.();
     },
   });
 };
 
 // delete
-
 
 export const deletePayeeSchema = z.object({
   id: z.string(),
@@ -195,14 +307,10 @@ const deleteUserPayee = createServerFn(
       });
     }
 
-    const res = await db
+    await db
       .delete(payee)
-      .where(
-        and(eq(payee.id, params.id), eq(payee.userId, auth.user.id)),
-      )
+      .where(and(eq(payee.id, params.id), eq(payee.userId, auth.user.id)))
       .execute();
-
-    console.log(res)
 
     return json(
       {
@@ -220,8 +328,8 @@ export const useDeletePayeeMigration = (onSuccess?: () => void) => {
   return useMutation({
     mutationFn: deleteUserPayee,
     onSuccess: async () => {
-      await queryClient.cancelQueries({ queryKey: ["payees", 'all'] });
-      await queryClient.invalidateQueries({ queryKey: ["payees", 'all'] });
+      await queryClient.cancelQueries({ queryKey: ["payees", "all"] });
+      await queryClient.invalidateQueries({ queryKey: ["payees", "all"] });
       onSuccess?.();
     },
   });
