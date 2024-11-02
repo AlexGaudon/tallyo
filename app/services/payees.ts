@@ -239,6 +239,9 @@ export const useCreatePayeeKeywordMutation = (onSuccess?: () => void) => {
     onSuccess: async () => {
       await queryClient.cancelQueries({ queryKey: ["payees", "all"] });
       await queryClient.invalidateQueries({ queryKey: ["payees", "all"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["payees", "id"]
+      })
       onSuccess?.();
     },
   });
@@ -290,6 +293,9 @@ export const useDeletePayeeKeyword = (onSuccess?: () => void) => {
     onSuccess: async () => {
       await queryClient.cancelQueries({ queryKey: ["payees", "all"] });
       await queryClient.invalidateQueries({ queryKey: ["payees", "all"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["payees", "id"]
+      })
       onSuccess?.();
     },
   });

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
-import { Dialog, DialogHeader, DialogTrigger } from "~/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "~/components/ui/dialog";
 import { payeeQueries } from "~/services/payees";
 import { PayeeDetail } from "./payees.index";
 
@@ -23,23 +23,25 @@ function RouteComponent() {
   const params = Route.useParams();
 
   const { data } = useQuery(payeeQueries.getUserPayeeById(params.id));
+  const [open, setOpen] = useState(true);
 
-  if (!data) {
+  if (!data || !open) {
     return <Navigate to="/payees" />;
   }
 
-  const [open, setOpen] = useState(true);
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(newValue) => {
-        setOpen(newValue);
-      }}
-    >
-      <DialogTrigger></DialogTrigger>
-      <DialogHeader>
-        <PayeeDetail {...data} showKeywords={true} />
-      </DialogHeader>
-    </Dialog>
+    <>
+      <Dialog
+        open={true}
+        onOpenChange={(val) => {
+          setOpen(val);
+        }}
+      >
+        <DialogTrigger asChild></DialogTrigger>
+        <DialogContent>
+          <PayeeDetail key={"oogle"} {...data} showKeywords={true} />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
