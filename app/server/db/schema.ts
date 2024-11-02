@@ -1,7 +1,15 @@
 import { InferInsertModel, sql } from "drizzle-orm";
-import { boolean, date, integer, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  date,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+} from "drizzle-orm/pg-core";
 
-// AUTH RELATED 
+// AUTH RELATED
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -46,10 +54,9 @@ export const verification = pgTable("verification", {
   expiresAt: date("expiresAt").notNull(),
 });
 
-
 // APP RELATED
 
-export type CategorySchema = InferInsertModel<typeof category>
+export type CategorySchema = InferInsertModel<typeof category>;
 
 export const category = pgTable(
   "category",
@@ -67,39 +74,40 @@ export const category = pgTable(
   },
   (table) => ({
     unq: unique().on(table.name, table.userId),
-  })
+  }),
 );
 
 export type PayeeSchema = InferInsertModel<typeof payee>;
 
-export const payee = pgTable('payee',
+export const payee = pgTable(
+  "payee",
   {
-    id: text('id').primaryKey(),
-    name: text('name'),
-    userId: text('user_id').references(() => user.id),
-    categoryId: text('category_id').references(() => category.id),
+    id: text("id").primaryKey(),
+    name: text("name"),
+    userId: text("user_id").references(() => user.id),
+    categoryId: text("category_id").references(() => category.id),
     createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     uniqueExternalIdPerUser: unique().on(table.name, table.userId),
-  })
-)
+  }),
+);
 
-export const payeeKeyword = pgTable('payee_keyword', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').references(() => user.id, {
-    onDelete: 'cascade'
+export const payeeKeyword = pgTable("payee_keyword", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => user.id, {
+    onDelete: "cascade",
   }),
-  payeeId: text('payee_id').references(() => payee.id, {
-    onDelete: 'cascade'
+  payeeId: text("payee_id").references(() => payee.id, {
+    onDelete: "cascade",
   }),
-  keyword: text('keyword').notNull(),
+  keyword: text("keyword").notNull(),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
-})
+});
 
-export type TransactionSchema = InferInsertModel<typeof transaction>
+export type TransactionSchema = InferInsertModel<typeof transaction>;
 
 export const transaction = pgTable(
   "transaction",
@@ -110,11 +118,15 @@ export const transaction = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, {
-        onDelete: 'cascade'
+        onDelete: "cascade",
       }),
     date: timestamp("date").notNull(),
-    payee: text('payee'),
-    reviewed: boolean("reviewed").default(sql`false`).notNull(),
+    reviewed: boolean("reviewed")
+      .default(sql`false`)
+      .notNull(),
+    payeeId: text("payee_id").references(() => payee.id, {
+      onDelete: "set null",
+    }),
     categoryId: text("category_id").references(() => category.id, {
       onDelete: "set null",
     }),
@@ -124,5 +136,5 @@ export const transaction = pgTable(
   },
   (table) => ({
     uniqueExternalIdPerUser: unique().on(table.externalId, table.userId),
-  })
+  }),
 );

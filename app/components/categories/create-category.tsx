@@ -14,13 +14,13 @@ import { HexColorPicker } from "react-colorful";
 
 import { useDebounce } from "@uidotdev/usehooks";
 
-import { DialogTitle } from "@radix-ui/react-dialog";
 import { categoriesMutations } from "~/services/categories";
 import { Card, CardContent } from "../ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
 import { Label } from "../ui/label";

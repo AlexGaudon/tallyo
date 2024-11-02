@@ -67,6 +67,10 @@ const fetchUserPayees = createServerFn("GET", async (_, ctx) => {
     .orderBy(desc(category.name))
     .execute();
 
+  if (payees.length === 0) {
+    return null;
+  }
+
   return payees
     .map((x) => ({
       ...x,
@@ -110,6 +114,8 @@ const fetchUserPayeeById = createServerFn("GET", async (id: string, ctx) => {
     .orderBy(desc(category.name))
     .limit(1)
     .execute();
+
+  console.log("payees: ", payees);
 
   return payees
     .map((x) => ({

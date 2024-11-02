@@ -97,6 +97,7 @@ function TransactionsPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[180px]">Vendor</TableHead>
+              <TableHead className="w-[180px]">Payee</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead className="hidden md:table-cell">Category</TableHead>
               <TableHead>Reviewed</TableHead>
@@ -136,6 +137,7 @@ function TransactionsPage() {
       <div className="sm:hidden">
         <h1>mobile</h1>
       </div>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
   );
 }

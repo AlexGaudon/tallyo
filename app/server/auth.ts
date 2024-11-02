@@ -6,6 +6,9 @@ export type Auth =
   | { isAuthenticated: true; user: User; session: Session };
 
 export const auth = betterAuth({
+  logger: {
+    disabled: false,
+  },
   database: dbPool,
   emailAndPassword: {
     enabled: true,

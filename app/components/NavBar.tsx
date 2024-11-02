@@ -87,7 +87,6 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
     { href: "/dashboard", label: "Dashboard" },
     { href: "/categories", label: "Categories" },
     { href: "/payees", label: "Payees" },
-    { href: "/categorization", label: "Categorization" },
     { href: "/transactions", label: "Transactions" },
   ];
 

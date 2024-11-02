@@ -3,18 +3,9 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { TrashIcon } from "lucide-react";
 import { CategoryBadge } from "~/components/categories/category-badge";
 import { CreateCategoryForm } from "~/components/categories/create-category";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { DangerConfirm } from "~/components/ui/danger-confirm";
 import { Label } from "~/components/ui/label";
 import { Switch } from "~/components/ui/switch";
 import { categoriesMutations, categoriesQueries } from "~/services/categories";
@@ -51,38 +42,17 @@ function CategoriesPage() {
                   color={category.color}
                   link={false}
                 />
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                      <TrashIcon />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Are you absolutely sure?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete this category and unassign and transactions that
-                        were related to it.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <Button
-                        variant="destructive"
-                        onClick={() => {
-                          deleteCategory({
-                            id: category.id,
-                          });
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <DangerConfirm
+                  onConfirm={() => {
+                    deleteCategory({
+                      id: category.id,
+                    });
+                  }}
+                >
+                  <Button variant="ghost">
+                    <TrashIcon />
+                  </Button>
+                </DangerConfirm>
               </div>
               <div className="flex justify-between items-center">
                 <Label className="text-sm">Hide From Insights</Label>
