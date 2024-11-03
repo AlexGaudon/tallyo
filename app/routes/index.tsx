@@ -5,5 +5,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  return <div className="flex flex-col gap-4 p-6">Home Page, 123 123 Test</div>;
+  return (
+    <div className="flex flex-col gap-4 p-6">
+      Home Page, test another again woohoo yeehaw
+    </div>
+  );
 }
