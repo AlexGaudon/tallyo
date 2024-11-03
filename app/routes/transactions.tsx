@@ -96,19 +96,24 @@ function TransactionsPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[180px]">Date</TableHead>
               <TableHead className="w-[180px]">Vendor</TableHead>
               <TableHead className="w-[180px]">Payee</TableHead>
-              <TableHead>Amount</TableHead>
+              <TableHead className="w-[180px]">Amount</TableHead>
               <TableHead className="hidden md:table-cell">Category</TableHead>
               <TableHead>Reviewed</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data?.transactions.map((transaction) => {
-              const date = new Date(transaction.date);
+              const date = new Date(transaction.date)
+                .toISOString()
+                .split("T")[0];
               return (
                 <TableRow key={transaction.id}>
+                  <TableCell>{date}</TableCell>
                   <TableCell>{transaction.vendor}</TableCell>
+                  <TableCell>{transaction.payee?.name}</TableCell>
                   <TableCell>
                     <AmountDisplay amount={transaction.amount} />
                   </TableCell>
