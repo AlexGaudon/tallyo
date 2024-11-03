@@ -14,7 +14,7 @@ export function CategoryBadge(props: {
         className={`w-4 h-4 rounded-full mr-3`}
         aria-hidden="true"
       ></div>
-      <h2 className="text-lg">{props.name}</h2>
+      <h2 className="text-base">{props.name}</h2>
     </div>
   );
 
