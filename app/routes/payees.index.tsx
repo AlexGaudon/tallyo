@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Plus, Trash2, TrashIcon, WrenchIcon } from "lucide-react";
 import { useState } from "react";
@@ -156,7 +156,7 @@ export function PayeeDetail(
 }
 
 function PayeesRoute() {
-  const { data } = useQuery(payeeQueries.getUserPayees());
+  const { data } = useSuspenseQuery(payeeQueries.getUserPayees());
 
   return (
     <div className="my-2">
