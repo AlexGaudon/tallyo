@@ -1,14 +1,14 @@
+import { CategoryBadge } from "@/components/categories/category-badge";
+import { CreateCategoryForm } from "@/components/categories/create-category";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { DangerConfirm } from "@/components/ui/danger-confirm";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { categoriesMutations, categoriesQueries } from "@/services/categories";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { TrashIcon } from "lucide-react";
-import { CategoryBadge } from "~/components/categories/category-badge";
-import { CreateCategoryForm } from "~/components/categories/create-category";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { DangerConfirm } from "~/components/ui/danger-confirm";
-import { Label } from "~/components/ui/label";
-import { Switch } from "~/components/ui/switch";
-import { categoriesMutations, categoriesQueries } from "~/services/categories";
 
 export const Route = createFileRoute("/categories")({
   component: CategoriesPage,

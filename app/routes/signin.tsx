@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/authClient";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Button } from "~/components/ui/button";
-import { authClient } from "~/lib/authClient";
 
 export const Route = createFileRoute("/signin")({
   component: AuthPage,

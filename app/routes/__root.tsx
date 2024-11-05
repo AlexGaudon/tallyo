@@ -8,10 +8,10 @@ import {
 import { Body, Head, Html, Meta, Scripts } from "@tanstack/start";
 import React from "react";
 
-import Navbar from "~/components/NavBar";
-import icon from "~/favicon.ico?url";
-import { getAuth } from "~/server/functions";
-import appCss from "~/styles/app.css?url";
+import Navbar from "@/components/NavBar";
+import icon from "@/favicon.ico?url";
+import { getAuth } from "@/server/functions";
+import appCss from "@/styles/app.css?url";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {

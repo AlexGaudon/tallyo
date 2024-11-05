@@ -1,24 +1,24 @@
+import { Avatar } from "@/components/ui/avatar";
 import { Link, useRouteContext } from "@tanstack/react-router";
 import { ChevronDown, Menu } from "lucide-react";
 import * as React from "react";
-import { Avatar } from "~/components/ui/avatar";
 
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetClose,
   SheetContent,
   SheetTrigger,
-} from "~/components/ui/sheet";
-import { authClient } from "~/lib/authClient";
+} from "@/components/ui/sheet";
+import { authClient } from "@/lib/authClient";
 
-import icon from "~/tallyo.png?url";
+import icon from "@/tallyo.png?url";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);

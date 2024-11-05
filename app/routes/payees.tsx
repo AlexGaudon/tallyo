@@ -1,16 +1,16 @@
+import { CategoryBadge } from "@/components/categories/category-badge";
+import { CreatePayee } from "@/components/payees/create-payee";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { DangerConfirm } from "@/components/ui/danger-confirm";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { categoriesQueries } from "@/services/categories";
+import { payeeMutations, payeeQueries, UserPayee } from "@/services/payees";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Plus, Trash2, TrashIcon, WrenchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { CategoryBadge } from "~/components/categories/category-badge";
-import { CreatePayee } from "~/components/payees/create-payee";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { DangerConfirm } from "~/components/ui/danger-confirm";
-import { Dialog, DialogContent } from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { categoriesQueries } from "~/services/categories";
-import { payeeMutations, payeeQueries, UserPayee } from "~/services/payees";
 
 export const Route = createFileRoute("/payees")({
   component: PayeesRoute,

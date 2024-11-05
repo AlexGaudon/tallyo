@@ -1,11 +1,16 @@
-import { queryOptions } from "@tanstack/react-query";
+import { transform } from "@/lib/utils";
+import { db } from "@/server/db";
+import { category, payee, transaction } from "@/server/db/schema";
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getEvent } from "vinxi/http";
-import { transform } from "~/lib/utils";
-import { db } from "~/server/db";
-import { category, payee, transaction } from "~/server/db/schema";
+import { z } from "zod";
 
 const transactionSelectFields = {
   id: transaction.id,
@@ -46,44 +51,138 @@ export const transactionQueries = {
       queryKey: ["transactions", "paginated", limit, offset],
       queryFn: () =>
         fetchUserPaginatedTransactions({
-          limit, offset,
+          limit,
+          offset,
         }),
     }),
 } as const;
 
-export const fetchUserTransactions = createServerFn("GET", async (limit: number, ctx) => {
-  const event = getEvent();
-  const auth = event.context.auth;
+export const transactionMutations = {
+  updateCategory: (onSuccess?: () => void) => useAddTransactionCategory(onSuccess)
+} as const;
 
-  if (!auth.isAuthenticated) {
-    throw redirect({
-      to: "/signin",
-      code: 400,
-    });
-  }
+// add category
 
-  const query = db
-    .select(transactionSelectFields)
-    .from(transaction)
-    .where(eq(transaction.userId, auth.user?.id))
-    .orderBy(desc(transaction.date))
-    .leftJoin(category, eq(category.id, transaction.categoryId))
-    .leftJoin(payee, eq(payee.id, transaction.payeeId));
-
-  if (limit)
-    query.limit(limit)
-
-  const transactions = await query.execute();
-
-  return transactions.map(transform);
+export const addTransactionCategorySchema = z.object({
+  transactionId: z.string(),
+  categoryId: z.string(),
 });
+
+const addTransactionCategory = createServerFn(
+  "POST",
+  async (params: z.infer<typeof addTransactionCategorySchema>) => {
+    const event = getEvent();
+    const auth = event.context.auth;
+
+    if (!auth.isAuthenticated) {
+      throw redirect({
+        to: "/signin",
+      });
+    }
+
+    try {
+      await db
+        .update(transaction)
+        .set({
+          categoryId: params.categoryId,
+        })
+        .where(
+          and(
+            eq(transaction.userId, auth.user.id),
+            eq(transaction.id, params.transactionId),
+          ),
+        )
+        .execute();
+
+      return {
+        message: "Updated.",
+      };
+    } catch (e) {
+      console.error(e);
+      const message = (e as Error).message;
+      return {
+        message,
+      };
+    }
+  },
+);
+
+export const useAddTransactionCategory = (onSuccess?: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: addTransactionCategory,
+    onSuccess: async () => {
+      await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["transactions", "all"],
+      });
+      onSuccess?.();
+    },
+  });
+};
+
+const fetchUserReviewedTransactions = createServerFn(
+  'GET',
+  async () => {
+    const event = getEvent();
+    const auth = event.context.auth;
+
+    if (!auth.isAuthenticated) {
+      throw redirect({
+        to: "/signin",
+        code: 400,
+      });
+    }
+
+    const query = db
+      .select(transactionSelectFields)
+      .from(transaction)
+      .where(and(eq(transaction.userId, auth.user?.id), eq(transaction.reviewed, true)))
+      .orderBy(desc(transaction.date))
+      .leftJoin(category, eq(category.id, transaction.categoryId))
+      .leftJoin(payee, eq(payee.id, transaction.payeeId));
+
+    const transactions = await query.execute();
+
+    return transactions.map(transform);
+  }
+)
+
+export const fetchUserTransactions = createServerFn(
+  "GET",
+  async (limit: number, ctx) => {
+    const event = getEvent();
+    const auth = event.context.auth;
+
+    if (!auth.isAuthenticated) {
+      throw redirect({
+        to: "/signin",
+        code: 400,
+      });
+    }
+
+    const query = db
+      .select(transactionSelectFields)
+      .from(transaction)
+      .where(eq(transaction.userId, auth.user?.id))
+      .orderBy(desc(transaction.date))
+      .leftJoin(category, eq(category.id, transaction.categoryId))
+      .leftJoin(payee, eq(payee.id, transaction.payeeId));
+
+    if (limit) query.limit(limit);
+
+    const transactions = await query.execute();
+
+    return transactions.map(transform);
+  },
+);
 
 export const fetchUserPaginatedTransactions = createServerFn(
   "GET",
   async (
     input: {
-      limit: number,
-      offset: number
+      limit: number;
+      offset: number;
     },
     ctx,
   ) => {
@@ -99,7 +198,6 @@ export const fetchUserPaginatedTransactions = createServerFn(
 
     let conditions = [eq(transaction.userId, auth.user?.id)];
 
-
     const transactions = await db
       .select(transactionSelectFields)
       .from(transaction)
@@ -114,22 +212,25 @@ export const fetchUserPaginatedTransactions = createServerFn(
     // Determine hasMore based on the length of fetched data
     const hasMore = transactions.length > input.limit;
 
-    console.log(transactions.at(-1)?.id)
+    console.log(transactions.at(-1)?.id);
 
     // Trim the extra item if it was fetched
     const paginatedTransactions = hasMore
       ? transactions.slice(0, input.limit)
       : transactions;
 
-    const total = await db.select({
-      count: sql<number>`COUNT(*)`
-    }).from(transaction)
-      .where(and(...conditions)).execute()
+    const total = await db
+      .select({
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(transaction)
+      .where(and(...conditions))
+      .execute();
 
     return {
       transactions: paginatedTransactions.map(transform),
       hasMore,
-      total: total[0].count
+      total: total[0].count,
     };
   },
 );

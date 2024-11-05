@@ -1,8 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { transactionQueries } from "../services/transactions";
 
-import { TransactionTable } from "~/components/transactions/table";
+import { TransactionTable } from "@/components/transactions/table";
+import { categoriesQueries } from "@/services/categories";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/transactions")({
   component: TransactionsPage,
@@ -13,19 +15,31 @@ export const Route = createFileRoute("/transactions")({
       });
     }
     await ctx.context.queryClient.ensureQueryData(
-      transactionQueries.getUserTransactions(),
+      transactionQueries.getUserTransactionsLimit(),
+    );
+    await ctx.context.queryClient.ensureQueryData(
+      categoriesQueries.getUserCategories(),
     );
   },
 });
 
 function TransactionsPage() {
-  const { data } = useQuery({
-    ...transactionQueries.getUserTransactions(),
-  });
-
-  return (
-    <>
-      <TransactionTable data={data!} />
-    </>
+  const queryClient = useQueryClient();
+  const { data, dataUpdatedAt } = useQuery(
+    transactionQueries.getUserTransactions(),
   );
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (mounted) return;
+
+    queryClient.invalidateQueries({
+      queryKey: ["transactions"],
+    });
+
+    setMounted(true);
+  }, [mounted]);
+
+  return <TransactionTable data={data!} />;
 }

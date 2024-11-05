@@ -19,8 +19,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { useDebounce } from "@uidotdev/usehooks";
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -29,8 +28,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { Input } from "~/components/ui/input";
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -38,10 +37,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table";
-import { Category } from "~/services/categories";
-import { UserPayee } from "~/services/payees";
-import { Transaction } from "~/services/transactions";
+} from "@/components/ui/table";
+import { Category } from "@/services/categories";
+import { UserPayee } from "@/services/payees";
+import { Transaction } from "@/services/transactions";
+import { useDebounce } from "@uidotdev/usehooks";
 import { CategoryBadge } from "../categories/category-badge";
 import AmountDisplay from "./amount-display";
 
@@ -138,18 +138,10 @@ export const columns: ColumnDef<Transaction>[] = [
     cell: ({ row }) => {
       const category = row.getValue("category") as Category | null;
       if (category) {
-        return (
-          <CategoryBadge
-            link={true}
-            color={category.color}
-            name={category.name}
-          />
-        );
+        return <CategoryBadge color={category.color} name={category.name} />;
       }
 
-      return (
-        <CategoryBadge color="#ff0000" name="Uncategorized" link={false} />
-      );
+      return <CategoryBadge transactionId={row.original.id} />;
     },
   },
   {
@@ -205,6 +197,10 @@ export function TransactionTable(props: { data: Transaction[] }) {
       );
     }
   }, [debouncedValue]);
+
+  useEffect(() => {
+    setTableData(props.data);
+  }, [props.data]);
 
   const table = useReactTable({
     data: tableData,

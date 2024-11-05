@@ -1,12 +1,10 @@
+import { Input } from "@/components/ui/input";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
-import { Input } from "~/components/ui/input";
 import { Button } from "../ui/button";
 
 import { useForm } from "@tanstack/react-form";
 
-import { DialogTitle } from "@radix-ui/react-dialog";
-import { useQuery } from "@tanstack/react-query";
 import {
   Select,
   SelectContent,
@@ -14,9 +12,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { categoriesQueries } from "~/services/categories";
-import { payeeMutations } from "~/services/payees";
+} from "@/components/ui/select";
+import { categoriesQueries } from "@/services/categories";
+import { payeeMutations } from "@/services/payees";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { useQuery } from "@tanstack/react-query";
 import { CategoryBadge } from "../categories/category-badge";
 import { Card, CardContent } from "../ui/card";
 import {

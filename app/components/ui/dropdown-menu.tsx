@@ -1,8 +1,8 @@
-import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronRight, Circle } from "lucide-react";
+import * as React from "react";
 
-import { cn } from "~/lib/utils";
+import { cn } from "@/lib/utils";
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
@@ -103,9 +103,9 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     checked={checked}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="left-2 absolute flex justify-center items-center w-3.5 h-3.5">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
+        <Check className="w-4 h-4" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -126,9 +126,9 @@ const DropdownMenuRadioItem = React.forwardRef<
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="left-2 absolute flex justify-center items-center w-3.5 h-3.5">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current" />
+        <Circle className="w-2 h-2 fill-current" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -181,18 +181,18 @@ DropdownMenuShortcut.displayName = "DropdownMenuShortcut";
 
 export {
   DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuCheckboxItem,
-  DropdownMenuRadioItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuGroup,
-  DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup,
+  DropdownMenuTrigger,
 };

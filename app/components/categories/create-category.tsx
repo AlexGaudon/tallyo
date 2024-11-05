@@ -1,12 +1,12 @@
-import { PipetteIcon, PlusIcon } from "lucide-react";
-import { useState } from "react";
-import { Input } from "~/components/ui/input";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "~/components/ui/popover";
-import { generateRandomPalette } from "~/lib/utils";
+} from "@/components/ui/popover";
+import { generateRandomPalette } from "@/lib/utils";
+import { PipetteIcon, PlusIcon } from "lucide-react";
+import { useState } from "react";
 import { Button } from "../ui/button";
 
 import { useForm } from "@tanstack/react-form";
@@ -14,7 +14,7 @@ import { HexColorPicker } from "react-colorful";
 
 import { useDebounce } from "@uidotdev/usehooks";
 
-import { categoriesMutations } from "~/services/categories";
+import { categoriesMutations } from "@/services/categories";
 import { Card, CardContent } from "../ui/card";
 import {
   Dialog,
