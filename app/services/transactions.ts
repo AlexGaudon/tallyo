@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
-import { and, asc, desc, eq, ilike } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { getEvent } from "vinxi/http";
 import { transform } from "~/lib/utils";
 import { db } from "~/server/db";
@@ -28,24 +28,30 @@ const transactionSelectFields = {
   createdAt: transaction.createdAt,
 };
 
+export type Transaction = Awaited<ReturnType<typeof fetchUserTransactions>>[0];
+
 export const transactionQueries = {
   getUserTransactions: () =>
     queryOptions({
       queryKey: ["transactions", "all"],
-      queryFn: () => fetchUserTransactions(),
+      queryFn: () => fetchUserTransactions(0),
     }),
-  getUserTransactionsPaginated: (page: number, filter?: string) =>
+  getUserTransactionsLimit: (limit = 100) =>
     queryOptions({
-      queryKey: ["transactions", "paginated", page, filter],
+      queryKey: ["transactions", "all"],
+      queryFn: () => fetchUserTransactions(limit),
+    }),
+  getUserTransactionsPaginated: (limit: number, offset: number) =>
+    queryOptions({
+      queryKey: ["transactions", "paginated", limit, offset],
       queryFn: () =>
         fetchUserPaginatedTransactions({
-          page,
-          filter,
+          limit, offset,
         }),
     }),
 } as const;
 
-const fetchUserTransactions = createServerFn("GET", async (_, ctx) => {
+export const fetchUserTransactions = createServerFn("GET", async (limit: number, ctx) => {
   const event = getEvent();
   const auth = event.context.auth;
 
@@ -56,13 +62,19 @@ const fetchUserTransactions = createServerFn("GET", async (_, ctx) => {
     });
   }
 
-  const transactions = await db
+  const query = db
     .select(transactionSelectFields)
     .from(transaction)
     .where(eq(transaction.userId, auth.user?.id))
-    .orderBy(asc(transaction.date))
+    .orderBy(desc(transaction.date))
     .leftJoin(category, eq(category.id, transaction.categoryId))
     .leftJoin(payee, eq(payee.id, transaction.payeeId));
+
+  if (limit)
+    query.limit(limit)
+
+  const transactions = await query.execute();
+
   return transactions.map(transform);
 });
 
@@ -70,20 +82,13 @@ export const fetchUserPaginatedTransactions = createServerFn(
   "GET",
   async (
     input: {
-      page: number;
-      filter: string | undefined;
+      limit: number,
+      offset: number
     },
     ctx,
   ) => {
     const event = getEvent();
     const auth = event.context.auth;
-
-    console.log(
-      "Querying with page: ",
-      input.page,
-      " and filter: ",
-      input.filter,
-    );
 
     if (!auth.isAuthenticated) {
       throw redirect({
@@ -93,17 +98,7 @@ export const fetchUserPaginatedTransactions = createServerFn(
     }
 
     let conditions = [eq(transaction.userId, auth.user?.id)];
-    console.log(input);
-    if (input.filter !== undefined) {
-      conditions.push(
-        ilike(transaction.vendor, `%${input.filter.toLowerCase()}%`),
-      );
-    }
 
-    // Set limit to one more than the items you want to fetch
-    const offset = (input.page - 1) * 10;
-    const count = 10;
-    const limit = count + 1;
 
     const transactions = await db
       .select(transactionSelectFields)
@@ -112,21 +107,29 @@ export const fetchUserPaginatedTransactions = createServerFn(
       .orderBy(desc(transaction.date))
       .leftJoin(category, eq(category.id, transaction.categoryId))
       .leftJoin(payee, eq(payee.id, transaction.payeeId))
-      .limit(limit)
-      .offset(offset)
+      .limit(input.limit + 1)
+      .offset(input.offset)
       .execute();
 
     // Determine hasMore based on the length of fetched data
-    const hasMore = transactions.length > count;
+    const hasMore = transactions.length > input.limit;
+
+    console.log(transactions.at(-1)?.id)
 
     // Trim the extra item if it was fetched
     const paginatedTransactions = hasMore
-      ? transactions.slice(0, count)
+      ? transactions.slice(0, input.limit)
       : transactions;
+
+    const total = await db.select({
+      count: sql<number>`COUNT(*)`
+    }).from(transaction)
+      .where(and(...conditions)).execute()
 
     return {
       transactions: paginatedTransactions.map(transform),
       hasMore,
+      total: total[0].count
     };
   },
 );

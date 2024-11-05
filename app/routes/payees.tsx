@@ -1,48 +1,48 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { Plus, Trash2, TrashIcon, WrenchIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { CategoryBadge } from '~/components/categories/category-badge'
-import { CreatePayee } from '~/components/payees/create-payee'
-import { Button } from '~/components/ui/button'
-import { Card, CardContent } from '~/components/ui/card'
-import { DangerConfirm } from '~/components/ui/danger-confirm'
-import { Dialog, DialogContent } from '~/components/ui/dialog'
-import { Input } from '~/components/ui/input'
-import { categoriesQueries } from '~/services/categories'
-import { payeeMutations, payeeQueries, UserPayee } from '~/services/payees'
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Plus, Trash2, TrashIcon, WrenchIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CategoryBadge } from "~/components/categories/category-badge";
+import { CreatePayee } from "~/components/payees/create-payee";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { DangerConfirm } from "~/components/ui/danger-confirm";
+import { Dialog, DialogContent } from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { categoriesQueries } from "~/services/categories";
+import { payeeMutations, payeeQueries, UserPayee } from "~/services/payees";
 
-export const Route = createFileRoute('/payees')({
+export const Route = createFileRoute("/payees")({
   component: PayeesRoute,
   beforeLoad: async (ctx) => {
     if (!ctx.context.auth.isAuthenticated) {
       throw redirect({
-        to: '/signin',
-      })
+        to: "/signin",
+      });
     }
-    await ctx.context.queryClient.ensureQueryData(payeeQueries.getUserPayees())
+    await ctx.context.queryClient.ensureQueryData(payeeQueries.getUserPayees());
     await ctx.context.queryClient.ensureQueryData(
       categoriesQueries.getUserCategories(),
-    )
+    );
   },
-})
+});
 
 export function PayeeDetail(
   props: UserPayee & {
-    showKeywords: boolean
-    onEdit?: () => void
+    showKeywords: boolean;
+    onEdit?: () => void;
   },
 ) {
-  console.log('props: ', props)
-  const { mutate: deletePayee } = payeeMutations.delete()
+  console.log("props: ", props);
+  const { mutate: deletePayee } = payeeMutations.delete();
 
-  const [newKeyword, setNewKeyword] = useState('')
+  const [newKeyword, setNewKeyword] = useState("");
 
   const { mutate: addKeyword } = payeeMutations.addKeyword(() => {
-    setNewKeyword('')
-  })
+    setNewKeyword("");
+  });
 
-  const { mutate: removeKeyword } = payeeMutations.removeKeyword()
+  const { mutate: removeKeyword } = payeeMutations.removeKeyword();
 
   const element = (
     <>
@@ -57,14 +57,14 @@ export function PayeeDetail(
         </div>
         {!props.showKeywords && (
           <div className="flex">
-            <Button variant={'ghost'} onClick={() => props.onEdit?.()}>
+            <Button variant={"ghost"} onClick={() => props.onEdit?.()}>
               <WrenchIcon className="w-3 h-3" />
             </Button>
             <DangerConfirm
               onConfirm={() => {
                 deletePayee({
                   id: props.id,
-                })
+                });
               }}
             >
               <div className="flex">
@@ -117,7 +117,7 @@ export function PayeeDetail(
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
               onKeyDown={(e) =>
-                e.key === 'Enter' &&
+                e.key === "Enter" &&
                 addKeyword({
                   payeeId: props.id,
                   keyword: newKeyword,
@@ -130,7 +130,7 @@ export function PayeeDetail(
                 addKeyword({
                   payeeId: props.id,
                   keyword: newKeyword,
-                })
+                });
               }}
               variant="outline"
               size="icon"
@@ -142,31 +142,31 @@ export function PayeeDetail(
         </>
       )}
     </>
-  )
+  );
 
   if (props.showKeywords) {
-    return element
+    return element;
   }
 
   return (
     <Card className="w-full max-w-md transition-colors" key={props.id}>
       <CardContent className="flex flex-col gap-4 p-4">{element}</CardContent>
     </Card>
-  )
+  );
 }
 
 function PayeesRoute() {
-  const { data } = useSuspenseQuery(payeeQueries.getUserPayees())
+  const { data } = useSuspenseQuery(payeeQueries.getUserPayees());
 
-  const [open, setOpen] = useState(false)
-  const [activePayee, setActivePayee] = useState<UserPayee | null>(null)
-  const [activePayeeIdx, setActivePayeeIdx] = useState(0)
+  const [open, setOpen] = useState(false);
+  const [activePayee, setActivePayee] = useState<UserPayee | null>(null);
+  const [activePayeeIdx, setActivePayeeIdx] = useState(0);
 
   useEffect(() => {
-    if (data === null) return
-    if (activePayeeIdx === null) return
-    setActivePayee(data[activePayeeIdx])
-  }, [activePayeeIdx, data])
+    if (data === null) return;
+    if (activePayeeIdx === null) return;
+    setActivePayee(data[activePayeeIdx]);
+  }, [activePayeeIdx, data]);
 
   return (
     <div className="my-2">
@@ -175,7 +175,7 @@ function PayeesRoute() {
           <Dialog
             open={open}
             onOpenChange={(val) => {
-              setOpen(val)
+              setOpen(val);
             }}
           >
             <DialogContent>
@@ -190,13 +190,13 @@ function PayeesRoute() {
             showKeywords={false}
             {...payee}
             onEdit={() => {
-              setActivePayeeIdx(idx)
-              setOpen(true)
+              setActivePayeeIdx(idx);
+              setOpen(true);
             }}
           />
         ))}
         <CreatePayee />
       </div>
     </div>
-  )
+  );
 }

@@ -109,28 +109,41 @@ export function CreateCategoryForm() {
                   <div>
                     <Label className="pb-20">Category Name</Label>
                     <form.Field
+                      validators={{
+                        onChange: ({ value, fieldApi }) =>
+                          value.length <= 0 && fieldApi.state.meta.isTouched
+                            ? "This field is required"
+                            : undefined,
+                      }}
                       name="categoryName"
                       children={(field) => (
-                        <Input
-                          autoComplete="off"
-                          aria-autocomplete="none"
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => {
-                            setPreview((val) => ({
-                              ...val,
-                              text: e.target.value,
-                            }));
-                            if (e.target.value === "") {
+                        <>
+                          <Input
+                            autoComplete="off"
+                            aria-autocomplete="none"
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => {
                               setPreview((val) => ({
                                 ...val,
-                                text: "Groceries",
+                                text: e.target.value,
                               }));
-                            }
-                            field.handleChange(e.target.value);
-                          }}
-                        />
+                              if (e.target.value === "") {
+                                setPreview((val) => ({
+                                  ...val,
+                                  text: "Groceries",
+                                }));
+                              }
+                              field.handleChange(e.target.value);
+                            }}
+                          />
+                          {field.state.meta.errors ? (
+                            <em role="alert" className="text-red-400">
+                              {field.state.meta.errors.join(", ")}
+                            </em>
+                          ) : null}
+                        </>
                       )}
                     />
                   </div>

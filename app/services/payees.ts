@@ -13,6 +13,8 @@ import { transform } from "~/lib/utils";
 import { db } from "~/server/db";
 import { category, payee, payeeKeyword } from "~/server/db/schema";
 
+export type UserPayee = Awaited<ReturnType<typeof fetchUserPayeeById>>;
+
 export const payeeQueries = {
   getUserPayees: () =>
     queryOptions({
@@ -79,7 +81,6 @@ const fetchUserPayees = createServerFn("GET", async (_, ctx) => {
     .map(transform);
 });
 
-export type UserPayee = Awaited<ReturnType<typeof fetchUserPayeeById>>;
 
 const fetchUserPayeeById = createServerFn("GET", async (id: string, ctx) => {
   const event = getEvent();

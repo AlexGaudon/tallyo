@@ -12,6 +12,26 @@ import { db } from "~/server/db";
 import { category } from "~/server/db/schema";
 
 import { uuidv7 } from "uuidv7";
+import { transform } from "~/lib/utils";
+
+
+// types
+
+export type Category = Awaited<ReturnType<typeof fetchUserCategories>>[0];
+
+export const categoriesQueries = {
+  getUserCategories: () =>
+    queryOptions({
+      queryKey: ["categories", "all"],
+      queryFn: () => fetchUserCategories(),
+    }),
+} as const;
+
+export const categoriesMutations = {
+  create: (onSuccess?: () => void) => useCreateCategoryMutation(onSuccess),
+  update: (onSuccess?: () => void) => useEditCategoryMutation(onSuccess),
+  delete: (onSuccess?: () => void) => useDeleteCategoryMutation(onSuccess),
+} as const;
 
 const fetchUserCategories = createServerFn("GET", async (_, ctx) => {
   const event = getEvent();
@@ -30,22 +50,8 @@ const fetchUserCategories = createServerFn("GET", async (_, ctx) => {
     .where(eq(category.userId, auth.user?.id))
     .orderBy(asc(category.name));
 
-  return json(categories);
+  return categories.map(transform)
 });
-
-export const categoriesQueries = {
-  getUserCategories: () =>
-    queryOptions({
-      queryKey: ["categories", "all"],
-      queryFn: () => fetchUserCategories(),
-    }),
-} as const;
-
-export const categoriesMutations = {
-  create: (onSuccess?: () => void) => useCreateCategoryMutation(onSuccess),
-  update: (onSuccess?: () => void) => useEditCategoryMutation(onSuccess),
-  delete: (onSuccess?: () => void) => useDeleteCategoryMutation(onSuccess),
-} as const;
 
 // create
 
@@ -210,14 +216,9 @@ const deleteUserCategory = createServerFn(
         )
         .execute();
 
-      return json(
-        {
-          message: "Deleted.",
-        },
-        {
-          status: 200,
-        },
-      );
+      return {
+        message: "Deleted.",
+      }
     } catch (e) {
       console.error(e);
       const message = (e as Error).message;
