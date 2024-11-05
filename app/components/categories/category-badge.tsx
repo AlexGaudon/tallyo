@@ -8,6 +8,14 @@ import { categoriesQueries } from "@/services/categories";
 import { transactionMutations } from "@/services/transactions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { PencilIcon } from "lucide-react";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 
 type UncategorizedProps = {
   transactionId: string;
@@ -19,7 +27,9 @@ type CategorizedProps = {
   link?: boolean;
 };
 
-type CategoryBadgeProps = UncategorizedProps | CategorizedProps;
+type CategoryBadgeProps = (UncategorizedProps | CategorizedProps) & {
+  className?: string;
+};
 
 function CategoryPicker(props: { children: React.ReactNode; id: string }) {
   const { data: categories } = useQuery(categoriesQueries.getUserCategories());
@@ -31,6 +41,52 @@ function CategoryPicker(props: { children: React.ReactNode; id: string }) {
       queryKey: ["transactions", "all"],
     });
   });
+
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={(val) => setOpen(val)}>
+      <DialogTrigger>
+        <div className="flex justify-center items-center gap-x-2">
+          {props.children} <PencilIcon />
+        </div>
+      </DialogTrigger>
+      <DialogContent>
+        <div className="lg:grid mx-auto w-fit">
+          <div className="flex justify-center items-center py-2">
+            <div className="gap-6 grid mx-auto w-[350px]">
+              <DialogTitle>
+                <div className="gap-2 grid text-center">
+                  <h1 className="font-bold text-3xl">Assign a Category</h1>
+                </div>
+              </DialogTitle>
+              <Select
+                onValueChange={async (val) => {
+                  setOpen(false);
+                  await mutateAsync({
+                    transactionId: props.id,
+                    categoryId: val,
+                  });
+                }}
+              >
+                <SelectTrigger>{props.children}</SelectTrigger>
+                <SelectContent>
+                  {categories?.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      <CategoryBadge
+                        name={category.name}
+                        color={category.color}
+                      />
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <Select
@@ -70,8 +126,8 @@ export function CategoryBadge(props: CategoryBadgeProps) {
         }}
         className={`w-4 h-4 rounded-full mr-3`}
         aria-hidden="true"
-      ></div>
-      <h2 className="text-base">{props.name}</h2>
+      />
+      <h2 className="text-sm">{props.name}</h2>
     </div>
   );
 

@@ -25,7 +25,7 @@ export const Route = createFileRoute("/transactions")({
 
 function TransactionsPage() {
   const queryClient = useQueryClient();
-  const { data, dataUpdatedAt } = useQuery(
+  const { data, isFetching } = useQuery(
     transactionQueries.getUserTransactions(),
   );
 
@@ -41,5 +41,5 @@ function TransactionsPage() {
     setMounted(true);
   }, [mounted]);
 
-  return <TransactionTable data={data!} />;
+  return <TransactionTable data={data!} isFetching={isFetching} />;
 }

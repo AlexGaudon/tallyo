@@ -13,6 +13,7 @@ import {
 import {
   ChevronDownIcon,
   ChevronsUpDownIcon,
+  CircleCheckIcon,
   EllipsisIcon,
   SortAscIcon,
   SortDescIcon,
@@ -38,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { Category } from "@/services/categories";
 import { UserPayee } from "@/services/payees";
 import { Transaction } from "@/services/transactions";
@@ -138,10 +140,32 @@ export const columns: ColumnDef<Transaction>[] = [
     cell: ({ row }) => {
       const category = row.getValue("category") as Category | null;
       if (category) {
-        return <CategoryBadge color={category.color} name={category.name} />;
+        return (
+          <CategoryBadge
+            color={category.color}
+            name={category.name}
+            className="text-sm"
+          />
+        );
       }
 
-      return <CategoryBadge transactionId={row.original.id} />;
+      return (
+        <CategoryBadge className="text-sm" transactionId={row.original.id} />
+      );
+    },
+  },
+  {
+    id: "reviewed",
+    enableHiding: false,
+    cell: ({ row }) => {
+      const reviewed = row.original.reviewed;
+      return (
+        <CircleCheckIcon
+          className={cn({
+            "text-green-400": reviewed,
+          })}
+        />
+      );
     },
   },
   {
@@ -174,7 +198,11 @@ export const columns: ColumnDef<Transaction>[] = [
   },
 ];
 
-export function TransactionTable(props: { data: Transaction[] }) {
+export function TransactionTable(props: {
+  data: Transaction[];
+  isFetching?: boolean;
+}) {
+  console.log("fetching", props.isFetching);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -186,21 +214,53 @@ export function TransactionTable(props: { data: Transaction[] }) {
 
   const debouncedValue = useDebounce(payeeFilter, 500);
 
-  useEffect(() => {
-    if (debouncedValue === "") {
-      setTableData(props.data);
-    } else {
-      setTableData(
-        props.data.filter((x) =>
-          x.payee?.name?.toLocaleLowerCase().includes(debouncedValue),
-        ),
-      );
-    }
-  }, [debouncedValue]);
+  const isUnreviewed = (data: Transaction) => {
+    return !data.reviewed;
+  };
 
   useEffect(() => {
-    setTableData(props.data);
+    applyFiltersAndSorting();
   }, [props.data]);
+
+  const [typeToShow, setTypeToShow] = useState<"unreviewed" | "all">("all");
+
+  const applyFiltersAndSorting = () => {
+    if (debouncedValue === "") {
+      if (typeToShow === "unreviewed") {
+        setTableData(props.data.filter(isUnreviewed));
+      } else {
+        setTableData(props.data);
+      }
+    } else {
+      if (typeToShow === "unreviewed") {
+        setTableData(
+          props.data
+            .filter(isUnreviewed)
+            .filter((x) =>
+              x.vendor
+                ?.toLocaleLowerCase()
+                .includes(debouncedValue.toLowerCase()),
+            ),
+        );
+      } else {
+        setTableData(
+          props.data.filter((x) =>
+            x.vendor
+              ?.toLocaleLowerCase()
+              .includes(debouncedValue.toLowerCase()),
+          ),
+        );
+      }
+    }
+  };
+
+  useEffect(() => {
+    applyFiltersAndSorting();
+  }, [typeToShow]);
+
+  useEffect(() => {
+    applyFiltersAndSorting();
+  }, [debouncedValue]);
 
   const table = useReactTable({
     data: tableData,
@@ -212,7 +272,15 @@ export function TransactionTable(props: { data: Transaction[] }) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
+    autoResetAll: false,
+    autoResetExpanded: false,
+    autoResetPageIndex: false,
     onRowSelectionChange: setRowSelection,
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
     state: {
       sorting,
       columnFilters,
@@ -234,9 +302,22 @@ export function TransactionTable(props: { data: Transaction[] }) {
           onClick={() => {
             table.resetSorting();
             setPayeeFilter("");
+            setTypeToShow("all");
           }}
         >
           Reset Table
+        </Button>
+        <Button
+          disabled={props.isFetching}
+          onClick={() => {
+            if (typeToShow === "all") {
+              setTypeToShow("unreviewed");
+            } else {
+              setTypeToShow("all");
+            }
+          }}
+        >
+          {typeToShow === "all" ? "Show Unreviewed" : "Show All"}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
