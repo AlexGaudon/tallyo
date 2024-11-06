@@ -11,7 +11,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  ChevronDownIcon,
   ChevronsUpDownIcon,
   CircleCheckIcon,
   EllipsisIcon,
@@ -23,7 +22,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -218,49 +216,36 @@ export function TransactionTable(props: {
     return !data.reviewed;
   };
 
-  useEffect(() => {
-    applyFiltersAndSorting();
-  }, [props.data]);
+  const isUncategorized = (data: Transaction) => {
+    return data.category === null;
+  };
 
   const [typeToShow, setTypeToShow] = useState<"unreviewed" | "all">("all");
+  const [uncategorizedOnly, setUncategorizedOnly] = useState(false);
 
   const applyFiltersAndSorting = () => {
-    if (debouncedValue === "") {
-      if (typeToShow === "unreviewed") {
-        setTableData(props.data.filter(isUnreviewed));
-      } else {
-        setTableData(props.data);
-      }
-    } else {
-      if (typeToShow === "unreviewed") {
-        setTableData(
-          props.data
-            .filter(isUnreviewed)
-            .filter((x) =>
-              x.vendor
-                ?.toLocaleLowerCase()
-                .includes(debouncedValue.toLowerCase()),
-            ),
-        );
-      } else {
-        setTableData(
-          props.data.filter((x) =>
-            x.vendor
-              ?.toLocaleLowerCase()
-              .includes(debouncedValue.toLowerCase()),
-          ),
-        );
-      }
+    let data = props.data;
+
+    if (debouncedValue !== "") {
+      data = data.filter((x) =>
+        x.payee?.name?.toLowerCase().includes(debouncedValue.toLowerCase()),
+      );
     }
+
+    if (typeToShow === "unreviewed") {
+      data = data.filter(isUnreviewed);
+    }
+
+    if (uncategorizedOnly) {
+      data = data.filter(isUncategorized);
+    }
+
+    setTableData(data);
   };
 
   useEffect(() => {
     applyFiltersAndSorting();
-  }, [typeToShow]);
-
-  useEffect(() => {
-    applyFiltersAndSorting();
-  }, [debouncedValue]);
+  }, [typeToShow, debouncedValue, props.data, uncategorizedOnly]);
 
   const table = useReactTable({
     data: tableData,
@@ -291,12 +276,12 @@ export function TransactionTable(props: {
 
   return (
     <div className="w-full">
-      <div className="flex items-center gap-x-2 py-4">
+      <div className="sm:block md:flex items-center space-x-2 space-y-2 mx-2 py-4">
         <Input
           placeholder="Filter payee..."
           value={payeeFilter}
           onChange={(e) => setPayeeFilter(e.target.value)}
-          className="max-w-sm"
+          className="sm:w-full max-w-sm"
         />
         <Button
           onClick={() => {
@@ -309,6 +294,7 @@ export function TransactionTable(props: {
         </Button>
         <Button
           disabled={props.isFetching}
+          className="w-[100px]"
           onClick={() => {
             if (typeToShow === "all") {
               setTypeToShow("unreviewed");
@@ -317,9 +303,18 @@ export function TransactionTable(props: {
             }
           }}
         >
-          {typeToShow === "all" ? "Show Unreviewed" : "Show All"}
+          {typeToShow === "all" ? "Unreviewed" : "All"}
         </Button>
-        <DropdownMenu>
+        <Button
+          disabled={props.isFetching}
+          className="w-[100px]"
+          onClick={() => {
+            setUncategorizedOnly((val) => !val);
+          }}
+        >
+          {uncategorizedOnly ? "Uncategorized" : "All"}
+        </Button>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
               Columns <ChevronDownIcon className="ml-2 w-4 h-4" />
@@ -344,7 +339,7 @@ export function TransactionTable(props: {
                 );
               })}
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </div>
       <div className="border rounded-md">
         <Table>
