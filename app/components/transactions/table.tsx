@@ -227,8 +227,10 @@ export function TransactionTable(props: {
     let data = props.data;
 
     if (debouncedValue !== "") {
-      data = data.filter((x) =>
-        x.payee?.name?.toLowerCase().includes(debouncedValue.toLowerCase()),
+      data = data.filter(
+        (x) =>
+          x.payee?.name?.toLowerCase().includes(debouncedValue.toLowerCase()) ||
+          x.vendor.toLowerCase().includes(debouncedValue.toLocaleLowerCase()),
       );
     }
 
@@ -288,13 +290,15 @@ export function TransactionTable(props: {
             table.resetSorting();
             setPayeeFilter("");
             setTypeToShow("all");
+            setTypeToShow("all");
+            setUncategorizedOnly(false);
           }}
         >
           Reset Table
         </Button>
+
         <Button
           disabled={props.isFetching}
-          className="w-[100px]"
           onClick={() => {
             if (typeToShow === "all") {
               setTypeToShow("unreviewed");
@@ -303,17 +307,20 @@ export function TransactionTable(props: {
             }
           }}
         >
-          {typeToShow === "all" ? "Unreviewed" : "All"}
+          {typeToShow === "all" ? "Show Unreviewed" : "Show All"}
         </Button>
+
         <Button
           disabled={props.isFetching}
-          className="w-[100px]"
           onClick={() => {
             setUncategorizedOnly((val) => !val);
           }}
         >
-          {uncategorizedOnly ? "Uncategorized" : "All"}
+          {uncategorizedOnly
+            ? "Show Uncategorized Only"
+            : "Show All Transactions"}
         </Button>
+
         {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
