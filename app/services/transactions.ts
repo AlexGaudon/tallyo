@@ -124,7 +124,7 @@ export const useAddTransactionCategory = (onSuccess?: () => void) => {
                 category: {
                   ...transaction.category,
                   id: newVal.categoryId,
-                  color: "#ee7662",
+                  color: categories.find(x => x.id === newVal.categoryId)?.color || "#ee7662",
                   name: categories.find(x => x.id === newVal.categoryId)?.name || 'Loading...',
                   hideFromInsights: false,
                   treatAsIncome: false,
