@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DangerConfirm } from "@/components/ui/danger-confirm";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
 import { categoriesMutations, categoriesQueries } from "@/services/categories";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
@@ -28,10 +30,13 @@ function CategoriesPage() {
   const { data } = useQuery(categoriesQueries.getUserCategories());
 
   const { mutate: updateCategory } = categoriesMutations.update();
-  const { mutate: deleteCategory } = categoriesMutations.delete();
+  const { mutateAsync: deleteCategory } = categoriesMutations.delete();
+
+  const { toast } = useToast();
 
   return (
     <div className="my-2">
+      <Toaster />
       <div className="gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 mb-12">
         {data?.map((category) => (
           <Card key={category.id}>
@@ -43,9 +48,13 @@ function CategoriesPage() {
                   link={false}
                 />
                 <DangerConfirm
-                  onConfirm={() => {
-                    deleteCategory({
+                  onConfirm={async () => {
+                    const res = await deleteCategory({
                       id: category.id,
+                    });
+                    toast({
+                      description: res.message,
+                      variant: res.ok ? "default" : "destructive",
                     });
                   }}
                 >

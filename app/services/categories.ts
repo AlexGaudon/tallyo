@@ -14,7 +14,6 @@ import { z } from "zod";
 import { transform } from "@/lib/utils";
 import { uuidv7 } from "uuidv7";
 
-
 // types
 
 export type Category = Awaited<ReturnType<typeof fetchUserCategories>>[0];
@@ -50,7 +49,7 @@ const fetchUserCategories = createServerFn("GET", async (_, ctx) => {
     .where(eq(category.userId, auth.user?.id))
     .orderBy(asc(category.name));
 
-  return categories.map(transform)
+  return categories.map(transform);
 });
 
 // create
@@ -207,7 +206,6 @@ const deleteUserCategory = createServerFn(
         to: "/signin",
       });
     }
-
     try {
       await db
         .delete(category)
@@ -217,21 +215,17 @@ const deleteUserCategory = createServerFn(
         .execute();
 
       return {
+        ok: true,
         message: "Deleted.",
-      }
+      };
     } catch (e) {
-      console.error(e);
       const message = (e as Error).message;
-      return json(
-        {
-          message: message.includes("duplicate key value")
-            ? "A category with this name already exists."
-            : message,
-        },
-        {
-          status: 500,
-        },
-      );
+      return {
+        ok: false,
+        message: message.includes("violates foreign")
+          ? "You must delete all payee's that reference this category"
+          : message,
+      };
     }
   },
 );
