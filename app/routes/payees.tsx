@@ -6,7 +6,7 @@ import { DangerConfirm } from "@/components/ui/danger-confirm";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { categoriesQueries } from "@/services/categories";
-import { payeeMutations, payeeQueries, UserPayee } from "@/services/payees";
+import { Payee, payeeMutations, payeeQueries } from "@/services/payees";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Plus, Trash2, TrashIcon, WrenchIcon } from "lucide-react";
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/payees")({
 });
 
 export function PayeeDetail(
-  props: UserPayee & {
+  props: Payee & {
     showKeywords: boolean;
     onEdit?: () => void;
   },
@@ -159,7 +159,7 @@ function PayeesRoute() {
   const { data } = useSuspenseQuery(payeeQueries.getUserPayees());
 
   const [open, setOpen] = useState(false);
-  const [activePayee, setActivePayee] = useState<UserPayee | null>(null);
+  const [activePayee, setActivePayee] = useState<Payee | null>(null);
   const [activePayeeIdx, setActivePayeeIdx] = useState(0);
 
   useEffect(() => {

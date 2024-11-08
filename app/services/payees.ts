@@ -13,7 +13,7 @@ import { uuidv7 } from "uuidv7";
 import { getEvent } from "vinxi/http";
 import { z } from "zod";
 
-export type UserPayee = Awaited<ReturnType<typeof fetchUserPayeeById>>;
+export type Payee = Awaited<ReturnType<typeof fetchUserPayeeById>>;
 
 export const payeeQueries = {
   getUserPayees: () =>
@@ -80,7 +80,6 @@ const fetchUserPayees = createServerFn("GET", async (_, ctx) => {
     }))
     .map(transform);
 });
-
 
 const fetchUserPayeeById = createServerFn("GET", async (id: string, ctx) => {
   const event = getEvent();
@@ -241,8 +240,8 @@ export const useCreatePayeeKeywordMutation = (onSuccess?: () => void) => {
       await queryClient.cancelQueries({ queryKey: ["payees", "all"] });
       await queryClient.invalidateQueries({ queryKey: ["payees", "all"] });
       await queryClient.invalidateQueries({
-        queryKey: ["payees", "id"]
-      })
+        queryKey: ["payees", "id"],
+      });
       onSuccess?.();
     },
   });
@@ -295,8 +294,8 @@ export const useDeletePayeeKeyword = (onSuccess?: () => void) => {
       await queryClient.cancelQueries({ queryKey: ["payees", "all"] });
       await queryClient.invalidateQueries({ queryKey: ["payees", "all"] });
       await queryClient.invalidateQueries({
-        queryKey: ["payees", "id"]
-      })
+        queryKey: ["payees", "id"],
+      });
       onSuccess?.();
     },
   });

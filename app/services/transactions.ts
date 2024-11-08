@@ -12,6 +12,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { getEvent } from "vinxi/http";
 import { z } from "zod";
 import { Category } from "./categories";
+import { Payee } from "./payees";
 
 const transactionSelectFields = {
   id: transaction.id,
@@ -52,7 +53,100 @@ export const transactionQueries = {
 export const transactionMutations = {
   updateCategory: (onSuccess?: () => void) =>
     useAddTransactionCategory(onSuccess),
+  updatePayee: (onSuccess?: () => void) => useAddTransactionPayee(onSuccess),
 } as const;
+
+// add payee
+
+export const addTransactionPayeeSchema = z.object({
+  transactionId: z.string(),
+  payeeId: z.string(),
+});
+
+const addTransactionPayee = createServerFn(
+  "POST",
+  async (params: z.infer<typeof addTransactionPayeeSchema>) => {
+    const event = getEvent();
+    const auth = event.context.auth;
+
+    if (!auth.isAuthenticated) {
+      throw redirect({
+        to: "/signin",
+      });
+    }
+
+    try {
+      await db
+        .update(transaction)
+        .set({
+          payeeId: params.payeeId,
+        })
+        .where(
+          and(
+            eq(transaction.userId, auth.user.id),
+            eq(transaction.id, params.transactionId),
+          ),
+        )
+        .execute();
+
+      return {
+        message: "Updated.",
+      };
+    } catch (e) {
+      console.error(e);
+      const message = (e as Error).message;
+      return {
+        message,
+      };
+    }
+  },
+);
+
+export const useAddTransactionPayee = (onSuccess?: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: addTransactionPayee,
+    onMutate: async (newVal) => {
+      await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
+
+      const previousTransactions = queryClient.getQueryData([
+        "transactions",
+        "all",
+      ]);
+
+      const payees = queryClient.getQueryData(["payees", "all"]) as Payee[];
+
+      queryClient.setQueryData(
+        ["transactions", "all"],
+        (old: Transaction[] = []) => {
+          return old.map((transaction) =>
+            transaction.id === newVal.transactionId
+              ? {
+                  ...transaction,
+                  payee: payees.find((x) => x.id === newVal.payeeId),
+                }
+              : transaction,
+          );
+        },
+      );
+
+      return { previousTransactions };
+    },
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(
+        ["transactions", "all"],
+        context?.previousTransactions,
+      );
+    },
+    onSettled: async () => {
+      await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["transactions", "all"],
+      });
+    },
+    onSuccess: () => onSuccess?.(),
+  });
+};
 
 // add category
 
@@ -112,7 +206,10 @@ export const useAddTransactionCategory = (onSuccess?: () => void) => {
         "all",
       ]);
 
-      const categories = queryClient.getQueryData(['categories', 'all']) as Category[]
+      const categories = queryClient.getQueryData([
+        "categories",
+        "all",
+      ]) as Category[];
 
       queryClient.setQueryData(
         ["transactions", "all"],
@@ -120,16 +217,20 @@ export const useAddTransactionCategory = (onSuccess?: () => void) => {
           return old.map((transaction) =>
             transaction.id === newVal.transactionId
               ? {
-                ...transaction,
-                category: {
-                  ...transaction.category,
-                  id: newVal.categoryId,
-                  color: categories.find(x => x.id === newVal.categoryId)?.color || "#ee7662",
-                  name: categories.find(x => x.id === newVal.categoryId)?.name || 'Loading...',
-                  hideFromInsights: false,
-                  treatAsIncome: false,
-                },
-              }
+                  ...transaction,
+                  category: {
+                    ...transaction.category,
+                    id: newVal.categoryId,
+                    color:
+                      categories.find((x) => x.id === newVal.categoryId)
+                        ?.color || "#ee7662",
+                    name:
+                      categories.find((x) => x.id === newVal.categoryId)
+                        ?.name || "Loading...",
+                    hideFromInsights: false,
+                    treatAsIncome: false,
+                  },
+                }
               : transaction,
           );
         },

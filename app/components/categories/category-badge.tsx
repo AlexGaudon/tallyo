@@ -87,26 +87,6 @@ function CategoryPicker(props: { children: React.ReactNode; id: string }) {
       </DialogContent>
     </Dialog>
   );
-
-  return (
-    <Select
-      onValueChange={async (val) => {
-        await mutateAsync({
-          transactionId: props.id,
-          categoryId: val,
-        });
-      }}
-    >
-      <SelectTrigger>{props.children}</SelectTrigger>
-      <SelectContent>
-        {categories?.map((category) => (
-          <SelectItem key={category.id} value={category.id}>
-            <CategoryBadge name={category.name} color={category.color} />
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
 }
 
 export function CategoryBadge(props: CategoryBadgeProps) {
