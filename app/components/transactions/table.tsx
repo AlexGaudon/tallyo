@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Category } from "@/services/categories";
-import { Transaction } from "@/services/transactions";
+import { Transaction, transactionMutations } from "@/services/transactions";
 import { useDebounce } from "@uidotdev/usehooks";
 import { CategoryBadge } from "../categories/category-badge";
 import {
@@ -124,8 +124,10 @@ export const columns: ColumnDef<Transaction>[] = [
       );
     },
     cell: ({ row }) => {
+      const reviewed = row.original.reviewed;
       const category = row.getValue("category") as Category | null;
-      if (category) {
+
+      if (category && reviewed) {
         return (
           <CategoryBadge
             color={category.color}
@@ -136,7 +138,12 @@ export const columns: ColumnDef<Transaction>[] = [
       }
 
       return (
-        <CategoryBadge className="text-sm" transactionId={row.original.id} />
+        <CategoryBadge
+          className="text-sm"
+          transactionId={row.original.id}
+          name={category?.name || "Uncategorized"}
+          color={category?.color || "#ff0000"}
+        />
       );
     },
   },
@@ -145,9 +152,17 @@ export const columns: ColumnDef<Transaction>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const reviewed = row.original.reviewed;
+
+      const { mutate: updateReviewed } = transactionMutations.updateReviewed();
+
       return (
         <CircleCheckIcon
-          onClick={() => {}}
+          onClick={async () => {
+            updateReviewed({
+              reviewed: !reviewed,
+              transactionId: row.original.id,
+            });
+          }}
           className={cn(
             {
               "text-green-400": reviewed,
@@ -180,12 +195,7 @@ export function TransactionTable(props: {
     return !data.reviewed;
   };
 
-  const isUncategorized = (data: Transaction) => {
-    return data.category === null;
-  };
-
   const [typeToShow, setTypeToShow] = useState<"unreviewed" | "all">("all");
-  const [uncategorizedOnly, setUncategorizedOnly] = useState(false);
 
   const applyFiltersAndSorting = () => {
     let data = props.data;
@@ -200,16 +210,12 @@ export function TransactionTable(props: {
       data = data.filter(isUnreviewed);
     }
 
-    if (uncategorizedOnly) {
-      data = data.filter(isUncategorized);
-    }
-
     setTableData(data);
   };
 
   useEffect(() => {
     applyFiltersAndSorting();
-  }, [typeToShow, debouncedValue, props.data, uncategorizedOnly]);
+  }, [typeToShow, debouncedValue, props.data]);
 
   const table = useReactTable({
     data: tableData,
@@ -242,74 +248,62 @@ export function TransactionTable(props: {
     <>
       <div className="w-full">
         <div className="sm:block md:flex items-center space-x-2 space-y-2 mx-2 py-4">
-          <Input
-            placeholder="Filter vendor..."
-            value={vendorFilter}
-            onChange={(e) => setVendorFilter(e.target.value)}
-            className="sm:w-full max-w-sm"
-          />
-          <Button
-            onClick={() => {
-              table.resetSorting();
-              setVendorFilter("");
-              setTypeToShow("all");
-              setTypeToShow("all");
-              setUncategorizedOnly(false);
-            }}
-          >
-            Reset Table
-          </Button>
-
-          <Button
-            disabled={props.isFetching}
-            onClick={() => {
-              if (typeToShow === "all") {
-                setTypeToShow("unreviewed");
-              } else {
+          <div className="flex items-center space-x-2 mx-2 w-full">
+            <Input
+              placeholder="Filter vendor..."
+              value={vendorFilter}
+              onChange={(e) => setVendorFilter(e.target.value)}
+              className="w-1/3 sm:w-full"
+            />
+            <Button
+              onClick={() => {
+                table.resetSorting();
+                setVendorFilter("");
                 setTypeToShow("all");
-              }
-            }}
-          >
-            {typeToShow === "all" ? "Show Unreviewed" : "Show All"}
-          </Button>
+              }}
+            >
+              Reset Table
+            </Button>
 
-          <Button
-            disabled={props.isFetching}
-            onClick={() => {
-              setUncategorizedOnly((val) => !val);
-            }}
-          >
-            {uncategorizedOnly
-              ? "Show Uncategorized Only"
-              : "Show All Transactions"}
-          </Button>
+            <Button
+              onClick={() => {
+                if (typeToShow === "all") {
+                  setTypeToShow("unreviewed");
+                } else {
+                  setTypeToShow("all");
+                }
+              }}
+            >
+              {typeToShow === "all" ? "Show Unreviewed" : "Show All"}
+            </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columns <ChevronDownIcon className="ml-2 w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-auto">
+                  Columns <ChevronDownIcon className="ml-2 w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) =>
+                          column.toggleVisibility(!!value)
+                        }
+                      >
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="border rounded-md">
           <Table>

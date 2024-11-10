@@ -19,6 +19,8 @@ import {
 
 type UncategorizedProps = {
   transactionId: string;
+  name: string;
+  color: string;
 };
 
 type CategorizedProps = {
@@ -93,7 +95,7 @@ export function CategoryBadge(props: CategoryBadgeProps) {
   if ("transactionId" in props) {
     return (
       <CategoryPicker id={props.transactionId}>
-        <CategoryBadge name="Uncategorized" color="#ff0000" />
+        <CategoryBadge name={props.name} color={props.color} />
       </CategoryPicker>
     );
   }
