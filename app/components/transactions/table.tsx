@@ -11,7 +11,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  ChevronDownIcon,
   ChevronsUpDownIcon,
   CircleCheckIcon,
   SortAscIcon,
@@ -34,12 +33,6 @@ import { Category } from "@/services/categories";
 import { Transaction, transactionMutations } from "@/services/transactions";
 import { useDebounce } from "@uidotdev/usehooks";
 import { CategoryBadge } from "../categories/category-badge";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
 import AmountDisplay from "./amount-display";
 
 const getSortIcon = (column: any) => (
@@ -247,63 +240,61 @@ export function TransactionTable(props: {
   return (
     <>
       <div className="w-full">
-        <div className="sm:block md:flex items-center space-x-2 space-y-2 mx-2 py-4">
-          <div className="flex items-center space-x-2 mx-2 w-full">
-            <Input
-              placeholder="Filter vendor..."
-              value={vendorFilter}
-              onChange={(e) => setVendorFilter(e.target.value)}
-              className="w-1/3 sm:w-full"
-            />
-            <Button
-              onClick={() => {
-                table.resetSorting();
-                setVendorFilter("");
+        <div className="sm:block md:flex items-center space-x-2 mx-2 py-4">
+          <Input
+            placeholder="Filter vendor..."
+            value={vendorFilter}
+            onChange={(e) => setVendorFilter(e.target.value)}
+            className="sm:w-full max-w-sm"
+          />
+          <Button
+            onClick={() => {
+              table.resetSorting();
+              setVendorFilter("");
+              setTypeToShow("all");
+            }}
+          >
+            Reset Table
+          </Button>
+
+          <Button
+            onClick={() => {
+              if (typeToShow === "all") {
+                setTypeToShow("unreviewed");
+              } else {
                 setTypeToShow("all");
-              }}
-            >
-              Reset Table
-            </Button>
+              }
+            }}
+          >
+            {typeToShow === "all" ? "Show Unreviewed" : "Show All"}
+          </Button>
 
-            <Button
-              onClick={() => {
-                if (typeToShow === "all") {
-                  setTypeToShow("unreviewed");
-                } else {
-                  setTypeToShow("all");
-                }
-              }}
-            >
-              {typeToShow === "all" ? "Show Unreviewed" : "Show All"}
-            </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto">
-                  Columns <ChevronDownIcon className="ml-2 w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
-                      >
-                        {column.id}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {/* <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Columns <ChevronDownIcon className="ml-2 w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu> */}
         </div>
         <div className="border rounded-md">
           <Table>
