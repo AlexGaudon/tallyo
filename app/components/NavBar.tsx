@@ -86,7 +86,6 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
   const links = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/categories", label: "Categories" },
-    { href: "/payees", label: "Payees" },
     { href: "/transactions", label: "Transactions" },
   ];
 

@@ -11,16 +11,15 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  ChevronDownIcon,
   ChevronsUpDownIcon,
   CircleCheckIcon,
-  HandCoinsIcon,
   SortAscIcon,
   SortDescIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -32,17 +31,15 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Category } from "@/services/categories";
-import { Payee } from "@/services/payees";
 import { Transaction } from "@/services/transactions";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@radix-ui/react-tooltip";
 import { useDebounce } from "@uidotdev/usehooks";
-import { AssignPayeeModal } from "../assign-payee-modal";
 import { CategoryBadge } from "../categories/category-badge";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import AmountDisplay from "./amount-display";
 
 const getSortIcon = (column: any) => (
@@ -73,28 +70,19 @@ export const columns: ColumnDef<Transaction>[] = [
     },
   },
   {
-    accessorKey: "payee",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Payee
-          {getSortIcon(column)}
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const payee = row.getValue("payee") as Payee | null;
-      return <div className="capitalize">{payee?.name}</div>;
-    },
-  },
-  {
     accessorKey: "vendor",
     header: "Vendor",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("vendor")}</div>
+    ),
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => (
+      <div className="md:w-[180px] capitalize">
+        {row.getValue("description")}
+      </div>
     ),
   },
   {
@@ -159,9 +147,11 @@ export const columns: ColumnDef<Transaction>[] = [
       const reviewed = row.original.reviewed;
       return (
         <CircleCheckIcon
+          onClick={() => {}}
           className={cn(
             {
               "text-green-400": reviewed,
+              "text-gray-500": !reviewed,
             },
             "cursor-pointer",
           )}
@@ -169,47 +159,6 @@ export const columns: ColumnDef<Transaction>[] = [
       );
     },
   },
-
-  // {
-  //   id: "actions",
-  //   enableHiding: false,
-  //   cell: ({ row }) => {
-  //     const origTransaction = row.original;
-  //     const [open, setOpen] = useState(false);
-  //     return (
-  //       <>
-  //         <Dialog
-  //           open={open}
-  //           onOpenChange={(val) => {
-  //             setOpen(val);
-  //           }}
-  //         >
-  //           <DialogContent>
-  //             <AddVendorToPayee vendor={origTransaction.vendor} />
-  //           </DialogContent>
-  //         </Dialog>
-  //         <DropdownMenu>
-  //           <DropdownMenuTrigger asChild>
-  //             <Button variant="ghost" className="p-0 w-8 h-8">
-  //               <span className="sr-only">Open menu</span>
-  //               <EllipsisIcon className="w-4 h-4" />
-  //             </Button>
-  //           </DropdownMenuTrigger>
-  //           <DropdownMenuContent align="end">
-  //             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-  //             <DropdownMenuItem
-  //               onClick={() => {
-  //                 setOpen(true);
-  //               }}
-  //             >
-  //               Assign to Payee
-  //             </DropdownMenuItem>
-  //           </DropdownMenuContent>
-  //         </DropdownMenu>
-  //       </>
-  //     );
-  //   },
-  // },
 ];
 
 export function TransactionTable(props: {
@@ -223,9 +172,9 @@ export function TransactionTable(props: {
 
   const [tableData, setTableData] = useState(props.data);
 
-  const [payeeFilter, setPayeeFilter] = useState("");
+  const [vendorFilter, setVendorFilter] = useState("");
 
-  const debouncedValue = useDebounce(payeeFilter, 500);
+  const debouncedValue = useDebounce(vendorFilter, 500);
 
   const isUnreviewed = (data: Transaction) => {
     return !data.reviewed;
@@ -242,10 +191,8 @@ export function TransactionTable(props: {
     let data = props.data;
 
     if (debouncedValue !== "") {
-      data = data.filter(
-        (x) =>
-          x.payee?.name?.toLowerCase().includes(debouncedValue.toLowerCase()) ||
-          x.vendor.toLowerCase().includes(debouncedValue.toLocaleLowerCase()),
+      data = data.filter((x) =>
+        x.vendor.toLowerCase().includes(debouncedValue.toLocaleLowerCase()),
       );
     }
 
@@ -291,39 +238,20 @@ export function TransactionTable(props: {
     },
   });
 
-  const [open, setOpen] = useState(false);
-  const [transactionId, setTransactionId] = useState("");
-
   return (
     <>
-      <Dialog
-        open={open}
-        onOpenChange={(val) => {
-          setOpen(val);
-        }}
-      >
-        <DialogContent aria-describedby="modal for payee selection">
-          <AssignPayeeModal
-            transactionId={transactionId}
-            onSuccess={() => {
-              setOpen(false);
-              setTransactionId("");
-            }}
-          />
-        </DialogContent>
-      </Dialog>
       <div className="w-full">
         <div className="sm:block md:flex items-center space-x-2 space-y-2 mx-2 py-4">
           <Input
-            placeholder="Filter payee..."
-            value={payeeFilter}
-            onChange={(e) => setPayeeFilter(e.target.value)}
+            placeholder="Filter vendor..."
+            value={vendorFilter}
+            onChange={(e) => setVendorFilter(e.target.value)}
             className="sm:w-full max-w-sm"
           />
           <Button
             onClick={() => {
               table.resetSorting();
-              setPayeeFilter("");
+              setVendorFilter("");
               setTypeToShow("all");
               setTypeToShow("all");
               setUncategorizedOnly(false);
@@ -356,32 +284,32 @@ export function TransactionTable(props: {
               : "Show All Transactions"}
           </Button>
 
-          {/* <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDownIcon className="ml-2 w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu> */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Columns <ChevronDownIcon className="ml-2 w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="border rounded-md">
           <Table>
@@ -418,24 +346,6 @@ export function TransactionTable(props: {
                         )}
                       </TableCell>
                     ))}
-                    <TableCell>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <HandCoinsIcon
-                              onClick={() => {
-                                setOpen(true);
-                                setTransactionId(row.original.id);
-                              }}
-                              className="cursor-pointer"
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Assign to Payee</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </TableCell>
                   </TableRow>
                 ))
               ) : (
@@ -459,7 +369,9 @@ export function TransactionTable(props: {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => table.previousPage()}
+              onClick={() => {
+                table.previousPage();
+              }}
               disabled={!table.getCanPreviousPage()}
             >
               Previous
@@ -467,7 +379,9 @@ export function TransactionTable(props: {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => table.nextPage()}
+              onClick={() => {
+                table.nextPage();
+              }}
               disabled={!table.getCanNextPage()}
             >
               Next

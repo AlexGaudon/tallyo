@@ -1,6 +1,6 @@
 import { transform } from "@/lib/utils";
 import { db } from "@/server/db";
-import { category, payee, transaction } from "@/server/db/schema";
+import { category, transaction } from "@/server/db/schema";
 import {
   queryOptions,
   useMutation,
@@ -11,18 +11,14 @@ import { createServerFn } from "@tanstack/start";
 import { and, desc, eq } from "drizzle-orm";
 import { getEvent } from "vinxi/http";
 import { z } from "zod";
-import { Category } from "./categories";
-import { Payee } from "./payees";
+import { Category } from "../categories";
 
 const transactionSelectFields = {
   id: transaction.id,
   amount: transaction.amount,
   vendor: transaction.vendor,
   date: transaction.date,
-  payee: {
-    id: payee.id,
-    name: payee.name,
-  },
+  description: transaction.description,
   category: {
     id: category.id,
     name: category.name,
@@ -53,100 +49,7 @@ export const transactionQueries = {
 export const transactionMutations = {
   updateCategory: (onSuccess?: () => void) =>
     useAddTransactionCategory(onSuccess),
-  updatePayee: (onSuccess?: () => void) => useAddTransactionPayee(onSuccess),
 } as const;
-
-// add payee
-
-export const addTransactionPayeeSchema = z.object({
-  transactionId: z.string(),
-  payeeId: z.string(),
-});
-
-const addTransactionPayee = createServerFn(
-  "POST",
-  async (params: z.infer<typeof addTransactionPayeeSchema>) => {
-    const event = getEvent();
-    const auth = event.context.auth;
-
-    if (!auth.isAuthenticated) {
-      throw redirect({
-        to: "/signin",
-      });
-    }
-
-    try {
-      await db
-        .update(transaction)
-        .set({
-          payeeId: params.payeeId,
-        })
-        .where(
-          and(
-            eq(transaction.userId, auth.user.id),
-            eq(transaction.id, params.transactionId),
-          ),
-        )
-        .execute();
-
-      return {
-        message: "Updated.",
-      };
-    } catch (e) {
-      console.error(e);
-      const message = (e as Error).message;
-      return {
-        message,
-      };
-    }
-  },
-);
-
-export const useAddTransactionPayee = (onSuccess?: () => void) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: addTransactionPayee,
-    onMutate: async (newVal) => {
-      await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
-
-      const previousTransactions = queryClient.getQueryData([
-        "transactions",
-        "all",
-      ]);
-
-      const payees = queryClient.getQueryData(["payees", "all"]) as Payee[];
-
-      queryClient.setQueryData(
-        ["transactions", "all"],
-        (old: Transaction[] = []) => {
-          return old.map((transaction) =>
-            transaction.id === newVal.transactionId
-              ? {
-                  ...transaction,
-                  payee: payees.find((x) => x.id === newVal.payeeId),
-                }
-              : transaction,
-          );
-        },
-      );
-
-      return { previousTransactions };
-    },
-    onError: (err, newTodo, context) => {
-      queryClient.setQueryData(
-        ["transactions", "all"],
-        context?.previousTransactions,
-      );
-    },
-    onSettled: async () => {
-      await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
-      await queryClient.invalidateQueries({
-        queryKey: ["transactions", "all"],
-      });
-    },
-    onSuccess: () => onSuccess?.(),
-  });
-};
 
 // add category
 
@@ -238,7 +141,7 @@ export const useAddTransactionCategory = (onSuccess?: () => void) => {
 
       return { previousTransactions };
     },
-    onError: (err, newTodo, context) => {
+    onError: (err, _, context) => {
       queryClient.setQueryData(
         ["transactions", "all"],
         context?.previousTransactions,
@@ -272,8 +175,7 @@ export const fetchUserTransactions = createServerFn(
       .from(transaction)
       .where(eq(transaction.userId, auth.user?.id))
       .orderBy(desc(transaction.date))
-      .leftJoin(category, eq(category.id, transaction.categoryId))
-      .leftJoin(payee, eq(payee.id, transaction.payeeId));
+      .leftJoin(category, eq(category.id, transaction.categoryId));
 
     if (limit) query.limit(limit);
 

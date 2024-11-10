@@ -222,9 +222,7 @@ const deleteUserCategory = createServerFn(
       const message = (e as Error).message;
       return {
         ok: false,
-        message: message.includes("violates foreign")
-          ? "You must delete all payee's that reference this category"
-          : message,
+        message: message,
       };
     }
   },

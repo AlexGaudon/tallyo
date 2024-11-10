@@ -13,7 +13,6 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as TransactionsImport } from './routes/transactions'
 import { Route as SigninImport } from './routes/signin'
-import { Route as PayeesImport } from './routes/payees'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as CategoriesImport } from './routes/categories'
 import { Route as IndexImport } from './routes/index'
@@ -30,12 +29,6 @@ const TransactionsRoute = TransactionsImport.update({
 const SigninRoute = SigninImport.update({
   id: '/signin',
   path: '/signin',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const PayeesRoute = PayeesImport.update({
-  id: '/payees',
-  path: '/payees',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -88,13 +81,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
     }
-    '/payees': {
-      id: '/payees'
-      path: '/payees'
-      fullPath: '/payees'
-      preLoaderRoute: typeof PayeesImport
-      parentRoute: typeof rootRoute
-    }
     '/signin': {
       id: '/signin'
       path: '/signin'
@@ -137,7 +123,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/payees': typeof PayeesRoute
   '/signin': typeof SigninRoute
   '/transactions': typeof TransactionsRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -146,7 +131,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
-  '/payees': typeof PayeesRoute
   '/signin': typeof SigninRoute
   '/transactions': typeof TransactionsRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -157,7 +141,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/payees': typeof PayeesRoute
   '/signin': typeof SigninRoute
   '/transactions': typeof TransactionsRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -169,24 +152,16 @@ export interface FileRouteTypes {
     | '/'
     | '/categories'
     | '/dashboard'
-    | '/payees'
     | '/signin'
     | '/transactions'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/categories'
-    | '/payees'
-    | '/signin'
-    | '/transactions'
-    | '/dashboard'
+  to: '/' | '/categories' | '/signin' | '/transactions' | '/dashboard'
   id:
     | '__root__'
     | '/'
     | '/categories'
     | '/dashboard'
-    | '/payees'
     | '/signin'
     | '/transactions'
     | '/dashboard/'
@@ -197,7 +172,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRouteWithChildren
-  PayeesRoute: typeof PayeesRoute
   SigninRoute: typeof SigninRoute
   TransactionsRoute: typeof TransactionsRoute
 }
@@ -206,7 +180,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRouteWithChildren,
-  PayeesRoute: PayeesRoute,
   SigninRoute: SigninRoute,
   TransactionsRoute: TransactionsRoute,
 }
@@ -224,7 +197,6 @@ export const routeTree = rootRoute
         "/",
         "/categories",
         "/dashboard",
-        "/payees",
         "/signin",
         "/transactions"
       ]
@@ -240,9 +212,6 @@ export const routeTree = rootRoute
       "children": [
         "/dashboard/"
       ]
-    },
-    "/payees": {
-      "filePath": "payees.tsx"
     },
     "/signin": {
       "filePath": "signin.tsx"

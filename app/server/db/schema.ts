@@ -6,7 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
-  unique
+  unique,
 } from "drizzle-orm/pg-core";
 
 // AUTH RELATED
@@ -72,40 +72,8 @@ export const category = pgTable(
     createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [
-    unique().on(table.name, table.userId),
-  ]
+  (table) => [unique().on(table.name, table.userId)],
 );
-
-export type PayeeSchema = InferInsertModel<typeof payee>;
-
-export const payee = pgTable(
-  "payee",
-  {
-    id: text("id").primaryKey(),
-    name: text("name"),
-    userId: text("user_id").references(() => user.id),
-    categoryId: text("category_id").references(() => category.id),
-    createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
-  },
-  (table) => [
-    unique().on(table.name, table.userId),
-  ]
-);
-
-export const payeeKeyword = pgTable("payee_keyword", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").references(() => user.id, {
-    onDelete: "cascade",
-  }),
-  payeeId: text("payee_id").references(() => payee.id, {
-    onDelete: "cascade",
-  }),
-  keyword: text("keyword").notNull(),
-  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
-});
 
 export type TransactionSchema = InferInsertModel<typeof transaction>;
 
@@ -115,6 +83,7 @@ export const transaction = pgTable(
     id: text("id").primaryKey(),
     amount: integer("amount").notNull(),
     vendor: text("vendor").notNull(),
+    description: text("description"),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, {
@@ -124,9 +93,6 @@ export const transaction = pgTable(
     reviewed: boolean("reviewed")
       .default(sql`false`)
       .notNull(),
-    payeeId: text("payee_id").references(() => payee.id, {
-      onDelete: "set null",
-    }),
     categoryId: text("category_id").references(() => category.id, {
       onDelete: "set null",
     }),
@@ -134,7 +100,5 @@ export const transaction = pgTable(
     createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [
-    unique().on(table.externalId, table.userId),
-  ]
+  (table) => [unique().on(table.externalId, table.userId)],
 );
