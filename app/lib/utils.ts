@@ -94,10 +94,23 @@ export function transform<T extends Record<string, any>>(
 }
 
 export function transformAmounts<T extends Record<string, any>>(data: T) {
-  return {
-    ...data,
-    amount: getDisplayAmount(data["amount"]),
-  };
+  let returnValue: {
+    [t: string]: any;
+  } = { ...data };
+
+  if ("amount" in data) {
+    returnValue.amount = getDisplayAmount(Math.abs(data["amount"]));
+  }
+
+  if ("income" in data) {
+    returnValue.income = getDisplayAmount(Math.abs(data["income"]));
+  }
+
+  if ("expense" in data) {
+    returnValue.expense = getDisplayAmount(Math.abs(data["expense"]));
+  }
+
+  return returnValue;
 }
 
 export function getPeriodFromDate(date: Date) {
@@ -115,4 +128,10 @@ let dollar = new Intl.NumberFormat("en-US", {
 
 export function formatCurrency(amount: number) {
   return dollar.format(amount);
+}
+
+export function getRealMonth(date: Date): string {
+  return date.toLocaleString("default", {
+    month: "long",
+  });
 }

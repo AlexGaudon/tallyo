@@ -1,3 +1,4 @@
+import { IncomeVsExpenseChart } from "@/components/charts/invome-vs-expense";
 import { chartsQueries } from "@/services/charts";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { CategoryBreakdownChart } from "../components/charts/category-breakdown";
@@ -9,9 +10,14 @@ export const Route = createFileRoute("/dashboard")({
       throw redirect({ to: "/signin" });
     }
 
-    await context.queryClient.ensureQueryData(
-      chartsQueries.categoryBreakdown(),
-    );
+    await Promise.all([
+      await context.queryClient.ensureQueryData(
+        chartsQueries.categoryBreakdown(),
+      ),
+      await context.queryClient.ensureQueryData(
+        chartsQueries.incomeVsExpense(),
+      ),
+    ]);
   },
 });
 
@@ -19,6 +25,7 @@ function DashboardPage() {
   return (
     <div className="gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 p-4">
       <CategoryBreakdownChart />
+      <IncomeVsExpenseChart />
     </div>
   );
 }

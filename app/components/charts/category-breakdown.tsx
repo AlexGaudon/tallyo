@@ -8,6 +8,7 @@ import {
 import {
   ChartConfig,
   ChartContainer,
+  ChartLegend,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
@@ -18,11 +19,12 @@ import {
 } from "@/lib/utils";
 import { chartsQueries } from "@/services/charts";
 import { useQuery } from "@tanstack/react-query";
+import { x } from "node_modules/better-auth/dist/index-DUqGSAH3";
 import { Label, Pie, PieChart } from "recharts";
 
 let chartConfig: ChartConfig = {} satisfies ChartConfig;
 
-export function CategoryBreakdownChart() {
+export function CategoryBreakdownChart(props: { month?: string }) {
   const { data, isLoading } = useQuery(chartsQueries.categoryBreakdown());
 
   if (isLoading) {
@@ -35,11 +37,17 @@ export function CategoryBreakdownChart() {
 
   // Process data to ensure it's in the correct format and positive for display purposes
   const relevantData = data
-    .filter((x) => x.period === getPeriodFromDate(new Date()))
+    .filter((x) => {
+      if (props.month) {
+        return x.period === props.month;
+      }
+
+      return x.period === getPeriodFromDate(new Date());
+    })
     .map(transformAmounts)
     .map((x) => ({
       name: x.name!,
-      amount: Math.abs(parseFloat(x.amount)), // Ensure amounts are positive
+      amount: parseFloat(x.amount), // Ensure amounts are positive
       fill: x.color!,
     }));
 
@@ -57,14 +65,20 @@ export function CategoryBreakdownChart() {
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Transaction Category Breakdown</CardTitle>
-        <CardDescription>{getPeriodFromDate(new Date())}</CardDescription>
+        <CardDescription suppressHydrationWarning>
+          {new Date(props.month ?? new Date()).toLocaleDateString("default", {
+            month: "long",
+            year: "numeric",
+          })}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto max-h-[250px] aspect-square"
+          className="mx-auto max-h-[300px] aspect-square"
         >
           <PieChart>
+            <ChartLegend />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
