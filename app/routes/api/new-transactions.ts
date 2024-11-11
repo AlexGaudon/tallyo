@@ -76,6 +76,7 @@ export const Route = createAPIFileRoute("/api/new-transactions")({
             userId: user,
           })),
         )
+        .onConflictDoNothing()
         .execute();
       return json({ ok: true, message: res.rowCount });
     } catch (e) {
