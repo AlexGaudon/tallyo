@@ -36,13 +36,7 @@ type CategoryBadgeProps = (UncategorizedProps | CategorizedProps) & {
 function CategoryPicker(props: { children: React.ReactNode; id: string }) {
   const { data: categories } = useQuery(categoriesQueries.getUserCategories());
   const client = useQueryClient();
-  const { mutateAsync } = transactionMutations.updateCategory(async () => {
-    console.log("mutate success");
-    await client.cancelQueries({ queryKey: ["transactions", "all"] });
-    await client.invalidateQueries({
-      queryKey: ["transactions", "all"],
-    });
-  });
+  const { mutateAsync } = transactionMutations.updateCategory();
 
   const [open, setOpen] = useState(false);
 

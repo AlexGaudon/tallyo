@@ -3,7 +3,7 @@ import { transaction } from "@/server/db/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { getEvent } from "vinxi/http";
 import { z } from "zod";
 import { Category } from "../categories";
@@ -14,7 +14,49 @@ export const transactionMutations = {
     useAddTransactionCategory(onSuccess),
   updateReviewed: (onSuccess?: () => void) =>
     useUpdateTransactionReviewed(onSuccess),
+  suggestCategory: () => {},
 } as const;
+
+// suggest category
+
+export const suggestCategorySchema = z.string();
+
+export const suggestCategory = createServerFn(
+  "POST",
+  async (params: z.infer<typeof suggestCategorySchema>) => {
+    const event = getEvent();
+    const auth = event.context.auth;
+
+    if (!auth.isAuthenticated) {
+      throw redirect({
+        to: "/signin",
+      });
+    }
+
+    console.log(params);
+
+    const trans = await db
+      .select()
+      .from(transaction)
+      .where(
+        and(eq(transaction.userId, auth.user.id), eq(transaction.id, params)),
+      )
+      .limit(1)
+      .execute();
+
+    if (trans === null) {
+      return null;
+    }
+
+    const thisTransaction = trans.at(0);
+
+    const suggestedCategory = await getRecommendedCategoryId(
+      thisTransaction!.vendor,
+    );
+
+    return suggestedCategory;
+  },
+);
 
 // update reviewed
 
@@ -204,3 +246,22 @@ export const useAddTransactionCategory = (onSuccess?: () => void) => {
     onSuccess: () => onSuccess?.(),
   });
 };
+
+async function getRecommendedCategoryId(
+  vendor: string,
+): Promise<string | null> {
+  // Query to get the most frequently used categoryId for the vendor
+  const result = await db
+    .select({
+      categoryId: transaction.categoryId,
+    })
+    .from(transaction)
+    .where(eq(transaction.vendor, vendor))
+    .groupBy(transaction.categoryId)
+    .orderBy(desc(sql<number>`count(${transaction.categoryId})`))
+    .limit(1)
+    .execute();
+
+  // Return the categoryId or null if no results were found
+  return result.length > 0 ? result[0].categoryId : null;
+}

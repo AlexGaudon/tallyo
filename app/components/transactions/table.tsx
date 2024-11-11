@@ -1,20 +1,21 @@
 import {
   ColumnDef,
   ColumnFiltersState,
-  SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  SortingState,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table";
 import {
   ChevronsUpDownIcon,
   CircleCheckIcon,
   SortAscIcon,
   SortDescIcon,
+  SquareFunctionIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -30,7 +31,11 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Category } from "@/services/categories";
-import { Transaction, transactionMutations } from "@/services/transactions";
+import {
+  suggestCategory,
+  Transaction,
+  transactionMutations,
+} from "@/services/transactions";
 import { useDebounce } from "@uidotdev/usehooks";
 import { CategoryBadge } from "../categories/category-badge";
 import AmountDisplay from "./amount-display";
@@ -141,6 +146,34 @@ export const columns: ColumnDef<Transaction>[] = [
     },
   },
   {
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row }) => {
+      const orig = row.original;
+
+      const { mutateAsync } = transactionMutations.updateCategory();
+
+      if (orig.category === null || orig.category.id === null) {
+        return (
+          <SquareFunctionIcon
+            className="hover:scale-105 cursor-pointer"
+            onClick={async () => {
+              const res = await suggestCategory(orig.id);
+
+              if (res !== null) {
+                await mutateAsync({
+                  categoryId: res,
+                  transactionId: orig.id,
+                });
+              }
+            }}
+          />
+        );
+      }
+      return null;
+    },
+  },
+  {
     id: "reviewed",
     enableHiding: false,
     cell: ({ row }) => {
@@ -162,6 +195,7 @@ export const columns: ColumnDef<Transaction>[] = [
               "text-gray-500": !reviewed,
             },
             "cursor-pointer",
+            "hover:scale-105",
           )}
         />
       );
