@@ -11,6 +11,14 @@ import {
 
 // AUTH RELATED
 
+export const authToken = pgTable("auth_token", {
+  id: text("id").primaryKey().notNull().unique(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id),
+  token: text("token").notNull().unique(),
+});
+
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name"),
