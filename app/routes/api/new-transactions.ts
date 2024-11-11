@@ -1,10 +1,23 @@
 import { db } from "@/server/db";
-import { transaction } from "@/server/db/schema";
+import { authToken, transaction } from "@/server/db/schema";
+
 import { json } from "@tanstack/start";
 import { createAPIFileRoute } from "@tanstack/start/api";
+import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { getUserIdFromAuthToken } from "../../server/db/utils";
+
+async function getUserIdFromAuthToken(token: string): Promise<string | null> {
+  const dbToken = await db
+    .select()
+    .from(authToken)
+    .where(eq(authToken.token, token));
+  if (dbToken.length === 0) {
+    return null;
+  }
+
+  return dbToken[0].userId;
+}
 
 const requestSchema = z.array(
   z.object({
