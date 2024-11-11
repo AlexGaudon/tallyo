@@ -15,6 +15,13 @@
       "when": 1731266141252,
       "tag": "0001_fair_texas_twister",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1731351009070,
+      "tag": "0002_legal_centennial",
+      "breakpoints": true
     }
   ]
 }

@@ -1,10 +1,10 @@
 import { db } from "@/server/db";
 import { transaction } from "@/server/db/schema";
-import { getUserIdFromAuthToken } from "@/server/db/utils";
 import { json } from "@tanstack/start";
 import { createAPIFileRoute } from "@tanstack/start/api";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
+import { getUserIdFromAuthToken } from "../../server/db/utils";
 
 const requestSchema = z.array(
   z.object({
