@@ -9,6 +9,7 @@ import { Body, Head, Html, Meta, Scripts } from "@tanstack/start";
 import React from "react";
 
 import Navbar from "@/components/NavBar";
+import { ThemeProvider } from "@/components/theme-provider";
 import icon from "@/favicon.ico?url";
 import { getAuth } from "@/server/functions";
 import appCss from "@/styles/app.css?url";
@@ -88,8 +89,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         />
       </Head>
       <Body>
-        <Navbar />
-        {children}
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <Navbar />
+          {children}
+        </ThemeProvider>
         <ScrollRestoration />
         <TanStackRouterDevtools position="bottom-right" />
         <ReactQueryDevtools buttonPosition="bottom-left" />
@@ -100,7 +103,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           dangerouslySetInnerHTML={{
             __html: `document.documentElement.classList.toggle(
                       'dark',
-                      localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+                      localStorage['vite-ui-theme'] === 'dark' || (!('vite-ui-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
                     )`,
           }}
         ></script>

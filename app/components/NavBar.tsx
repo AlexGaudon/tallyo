@@ -19,6 +19,7 @@ import {
 import { authClient } from "@/lib/authClient";
 
 import icon from "@/tallyo.png?url";
+import { useTheme } from "./theme-provider";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -26,6 +27,8 @@ export default function Navbar() {
   const context = useRouteContext({
     from: "__root__",
   });
+
+  const { setTheme } = useTheme();
 
   return (
     <nav className="border-b">
@@ -93,7 +96,7 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
     <Link
       key={link.href}
       to={link.href}
-      className="font-medium text-gray-200 text-sm hover:text-gray-400"
+      className="font-medium text-foreground text-sm hover:text-gray-400"
     >
       {link.label}
     </Link>
@@ -115,6 +118,8 @@ function UserDropdown() {
     from: "__root__",
   });
 
+  const { theme, setTheme } = useTheme();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -132,6 +137,17 @@ function UserDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem
+          onClick={() => {
+            if (theme === "dark") {
+              setTheme("light");
+            } else if (theme === "light") {
+              setTheme("dark");
+            }
+          }}
+        >
+          <span>Switch to {theme === "light" ? "dark" : "light"} mode</span>
+        </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
             authClient.signOut().then(() => {
