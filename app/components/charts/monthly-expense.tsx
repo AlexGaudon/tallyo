@@ -18,8 +18,11 @@ import { categoriesQueries } from "@/services/categories";
 import { chartsQueries } from "@/services/charts";
 import { useQuery } from "@tanstack/react-query";
 import { subMonths } from "date-fns";
+import { MinusIcon, PlusIcon } from "lucide-react";
+import { useState } from "react";
 import { CategoryBadge } from "../categories/category-badge";
 import AmountDisplay from "../transactions/amount-display";
+import { Button } from "../ui/button";
 
 export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
   const { data, isLoading } = useQuery(chartsQueries.monthlyExpense());
@@ -33,10 +36,15 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
 
   const validPeriods: string[] = [];
 
-  for (let i = 0; i < (props.numberOfMonths ?? 2); i++) {
+  const [months, setMonths] = useState(props.numberOfMonths ?? 2);
+
+  for (let i = 0; i < months; i++) {
     const year = new Date().getFullYear();
-    validPeriods.push(`${year}-${subMonths(new Date(), i).getMonth() + 1}`);
+    validPeriods.push(
+      `${year}-${(subMonths(new Date(), i).getMonth() + 1).toString().padStart(2, "0")}`,
+    );
   }
+  console.log(validPeriods);
 
   const getAmountOfCategory = (category: string) =>
     Object.fromEntries(
@@ -50,14 +58,14 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
   const isIncome = (category: string) =>
     data.find((x) => x.category === category)?.isIncome ?? false;
 
-  const isExpense = (category: string) => !isIncome(category);
-
   const totalIncomeAmounts = Object.fromEntries(
     validPeriods.map((month) => [month, 0]),
   );
   const totalExpenseAmounts = Object.fromEntries(
     validPeriods.map((month) => [month, 0]),
   );
+
+  console.log(getAmountOfCategory("Auto"));
 
   const tableRows = (
     <>
@@ -114,11 +122,33 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Monthly Expense Chart</CardTitle>
+        <CardTitle>
+          <div className="flex items-center">
+            <span>Monthly Expense Chart</span>
+            <div className="ml-auto">
+              <Button
+                disabled={months <= 1}
+                onClick={() => {
+                  setMonths(months - 1);
+                }}
+              >
+                <MinusIcon />
+              </Button>
+              <Button
+                disabled={months >= 6}
+                onClick={() => {
+                  setMonths(months + 1);
+                }}
+              >
+                <PlusIcon />
+              </Button>{" "}
+            </div>
+          </div>
+        </CardTitle>
         <CardDescription suppressHydrationWarning>
           {" "}
-          {getRealMonth(subMonths(new Date(), 2))} - {getRealMonth(new Date())}{" "}
-          {new Date().getFullYear()}
+          {getRealMonth(subMonths(new Date(), months - 1))} -{" "}
+          {getRealMonth(new Date())} {new Date().getFullYear()}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -126,7 +156,7 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
           <TableHeader>
             <TableRow>
               <TableCell className="p-1">Category</TableCell>
-              {[...Array(props.numberOfMonths ?? 2).keys()].map((idx) => (
+              {[...Array(months).keys()].map((idx) => (
                 <TableCell className="p-1" key={idx}>
                   {getRealMonth(subMonths(new Date(), idx))}
                 </TableCell>
