@@ -47,14 +47,17 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
       ]),
     );
 
-  console.log(getAmountOfCategory("Auto"));
-
-  console.log(validPeriods);
-
   const isIncome = (category: string) =>
     data.find((x) => x.category === category)?.isIncome ?? false;
 
   const isExpense = (category: string) => !isIncome(category);
+
+  const totalIncomeAmounts = Object.fromEntries(
+    validPeriods.map((month) => [month, 0]),
+  );
+  const totalExpenseAmounts = Object.fromEntries(
+    validPeriods.map((month) => [month, 0]),
+  );
 
   const tableRows = (
     <>
@@ -62,8 +65,12 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
         .filter((x) => !x.hideFromInsights && !x.treatAsIncome)
         .map((category) => {
           const amounts = getAmountOfCategory(category.name);
+          // Accumulate expense totals
+          validPeriods.forEach((month) => {
+            totalExpenseAmounts[month] += Number(amounts[month]);
+          });
           return (
-            <TableRow>
+            <TableRow key={`expense-${category.name}`}>
               <TableCell className="p-1">
                 <CategoryBadge color={category.color} name={category.name} />
               </TableCell>
@@ -79,8 +86,14 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
         .filter((x) => x.treatAsIncome)
         .map((category) => {
           const amounts = getAmountOfCategory(category.name);
+
+          // Accumulate income totals
+          validPeriods.forEach((month) => {
+            totalIncomeAmounts[month] += Number(amounts[month]);
+          });
+
           return (
-            <TableRow>
+            <TableRow key={`income-${category.name}`}>
               <TableCell className="p-1">
                 <CategoryBadge color={category.color} name={category.name} />
               </TableCell>
@@ -95,26 +108,8 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
     </>
   );
 
-  const calculateTotals = (filterFn: (category: string) => boolean) =>
-    validPeriods.reduce(
-      (acc, month) => {
-        acc[month] = categories
-          .filter((val) => filterFn(val.name))
-          .reduce(
-            (sum, category) =>
-              sum +
-              Math.abs(
-                data?.find((x) => x.category === category.name)?.amount ?? 0,
-              ),
-            0,
-          );
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-  const totalIncomeAmounts = calculateTotals(isIncome);
-  const totalExpenseAmounts = calculateTotals(isExpense);
+  console.log(totalIncomeAmounts);
+  console.log(totalExpenseAmounts);
 
   return (
     <Card>
@@ -143,7 +138,7 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
             <TableRow>
               <TableCell className="p-0">Income</TableCell>
               {validPeriods.map((month) => (
-                <TableCell className="p-0" key={month}>
+                <TableCell className="p-0" key={`income-${month}`}>
                   <AmountDisplay amount={totalIncomeAmounts[month]} />
                 </TableCell>
               ))}
@@ -151,7 +146,7 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
             <TableRow>
               <TableCell className="p-0">Expense</TableCell>
               {validPeriods.map((month) => (
-                <TableCell className="p-0" key={month}>
+                <TableCell className="p-0" key={`expense-${month}`}>
                   <AmountDisplay amount={totalExpenseAmounts[month]} />
                 </TableCell>
               ))}
@@ -159,11 +154,12 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
             <TableRow>
               <TableCell className="p-0">Totals</TableCell>
               {validPeriods.map((month) => (
-                <TableCell className="p-0" key={month}>
+                <TableCell className="p-0" key={`totals-${month}`}>
                   <AmountDisplay
                     colored
                     amount={
-                      totalIncomeAmounts[month] - totalExpenseAmounts[month]
+                      totalIncomeAmounts[month] -
+                      Math.abs(totalExpenseAmounts[month])
                     }
                   />
                 </TableCell>

@@ -45,7 +45,6 @@ export function IncomeVsExpenseChart() {
       let parts = x.period.split("-");
       parts[1] = (Number(parts[1]) + 1).toString().padStart(2, "0");
 
-      console.log(parts);
       return {
         month: getRealMonth(new Date(parts.join("-"))),
         income: x.income,
@@ -53,8 +52,6 @@ export function IncomeVsExpenseChart() {
       };
     })
     .map(transformAmounts);
-
-  console.log(tableData);
 
   return (
     <Card>
