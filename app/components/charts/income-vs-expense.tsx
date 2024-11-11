@@ -60,7 +60,7 @@ export function IncomeVsExpenseChart() {
     <Card>
       <CardHeader>
         <CardTitle>Income v Expenses</CardTitle>
-        <CardDescription>
+        <CardDescription suppressHydrationWarning>
           January -{" "}
           {new Date().toLocaleDateString("default", {
             month: "long",
