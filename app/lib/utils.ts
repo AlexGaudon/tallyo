@@ -74,7 +74,7 @@ function hslToHex(hue: number, saturation: number, lightness: number): string {
     .padStart(2, "0")}${Math.round(blue).toString(16).padStart(2, "0")}`;
 }
 
-type Transform<T> = {
+type TransformDate<T> = {
   [K in keyof T]: T[K] extends Date
     ? string
     : T[K] extends Date | null
@@ -84,11 +84,35 @@ type Transform<T> = {
 
 export function transform<T extends Record<string, any>>(
   data: T,
-): Transform<T> {
+): TransformDate<T> {
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => [
       key,
       value instanceof Date ? value.toString() : value,
     ]),
-  ) as Transform<T>;
+  ) as TransformDate<T>;
+}
+
+export function transformAmounts<T extends Record<string, any>>(data: T) {
+  return {
+    ...data,
+    amount: getDisplayAmount(data["amount"]),
+  };
+}
+
+export function getPeriodFromDate(date: Date) {
+  return date.toISOString().substring(0, 7);
+}
+
+export function getDisplayAmount(amount: number) {
+  return (amount / 100).toFixed(2);
+}
+
+let dollar = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+
+export function formatCurrency(amount: number) {
+  return dollar.format(amount);
 }

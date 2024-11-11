@@ -4,7 +4,7 @@ import { category, transaction } from "@/server/db/schema";
 import { queryOptions } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { getEvent } from "vinxi/http";
 
 const transactionSelectFields = {
@@ -57,7 +57,7 @@ export const fetchUserTransactions = createServerFn(
       .select(transactionSelectFields)
       .from(transaction)
       .where(eq(transaction.userId, auth.user?.id))
-      .orderBy(desc(transaction.date))
+      .orderBy(asc(transaction.reviewed), desc(transaction.date))
       .leftJoin(category, eq(category.id, transaction.categoryId));
 
     if (limit) query.limit(limit);

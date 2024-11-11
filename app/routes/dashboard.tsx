@@ -1,36 +1,24 @@
-import { Button } from "@/components/ui/button";
-import {
-  Link,
-  Outlet,
-  createFileRoute,
-  redirect,
-} from "@tanstack/react-router";
+import { chartsQueries } from "@/services/charts";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { CategoryBreakdownChart } from "../components/charts/category-breakdown";
 
 export const Route = createFileRoute("/dashboard")({
-  component: DashboardLayout,
+  component: DashboardPage,
   beforeLoad: async ({ context }) => {
     if (!context.auth) {
       throw redirect({ to: "/signin" });
     }
+
+    await context.queryClient.ensureQueryData(
+      chartsQueries.categoryBreakdown(),
+    );
   },
 });
 
-function DashboardLayout() {
+function DashboardPage() {
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <h1 className="font-bold text-4xl">Dashboard Layout</h1>
-      <div className="flex items-center gap-2">
-        This is a protected layout:
-        <pre className="bg-card p-1 border rounded-md text-card-foreground">
-          routes/dashboard.tsx
-        </pre>
-      </div>
-
-      <Button type="button" asChild className="w-fit" size="lg">
-        <Link to="/">Back to Home</Link>
-      </Button>
-
-      <Outlet />
+    <div className="gap-4 grid grid-cols-3 p-4">
+      <CategoryBreakdownChart />
     </div>
   );
 }
