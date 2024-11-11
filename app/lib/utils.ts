@@ -106,8 +106,8 @@ export function transformAmounts<T extends Record<string, any>>(data: T) {
     returnValue.income = getDisplayAmount(Math.abs(data["income"]));
   }
 
-  if ("expense" in data) {
-    returnValue.expense = getDisplayAmount(Math.abs(data["expense"]));
+  if ("expenses" in data) {
+    returnValue.expenses = getDisplayAmount(Math.abs(data["expenses"]));
   }
 
   return returnValue;
