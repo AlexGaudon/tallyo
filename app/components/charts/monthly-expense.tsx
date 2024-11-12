@@ -125,7 +125,7 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
         <CardTitle>
           <div className="flex items-center">
             <span>Monthly Expense Chart</span>
-            <div className="ml-auto">
+            <div className="space-x-2 ml-auto">
               <Button
                 disabled={months <= 1}
                 onClick={() => {
