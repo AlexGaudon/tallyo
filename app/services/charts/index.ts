@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { fetchCategoryBreakdownData } from "./category-breakdown";
 import { fetchIncomeVsExpenseData } from "./income-vs-expenses";
 import { fetchMonthlyExpenseData } from "./monthly-expense";
+import { fetchStatsData } from "./stats";
 
 export const chartsQueries = {
   categoryBreakdown: () =>
@@ -18,5 +19,10 @@ export const chartsQueries = {
     queryOptions({
       queryKey: ["charts", "monthlyExpense"],
       queryFn: () => fetchMonthlyExpenseData(),
+    }),
+  stats: () =>
+    queryOptions({
+      queryKey: ["charts", "stats"],
+      queryFn: () => fetchStatsData(),
     }),
 } as const;

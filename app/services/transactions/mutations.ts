@@ -1,9 +1,10 @@
 import { db } from "@/server/db";
-import { transaction } from "@/server/db/schema";
+import { transaction, TransactionSchema } from "@/server/db/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { and, desc, eq, sql } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
 import { getEvent } from "vinxi/http";
 import { z } from "zod";
 import { Category } from "../categories";
@@ -14,8 +15,82 @@ export const transactionMutations = {
     useAddTransactionCategory(onSuccess),
   updateReviewed: (onSuccess?: () => void) =>
     useUpdateTransactionReviewed(onSuccess),
-  suggestCategory: () => {},
+  splitTransaction: () => useSplitTransaction(),
 } as const;
+
+// split transaction
+
+export const splitTransactionSchema = z.object({
+  transactionId: z.string(),
+  firstAmount: z.number(),
+  secondAmount: z.number(),
+});
+
+export const splitTransaction = createServerFn(
+  "POST",
+  async (params: z.infer<typeof splitTransactionSchema>) => {
+    const event = getEvent();
+    const auth = event.context.auth;
+
+    if (!auth.isAuthenticated) {
+      throw redirect({
+        to: "/signin",
+      });
+    }
+
+    const existingTransaction = await db
+      .select()
+      .from(transaction)
+      .where(
+        and(
+          eq(transaction.userId, auth.user.id),
+          eq(transaction.id, params.transactionId),
+        ),
+      );
+
+    if (!existingTransaction || existingTransaction.length === 0) {
+      return {
+        ok: false,
+        message: "Error splitting transaction. Original transaction not found.",
+      };
+    }
+
+    const newTransaction: TransactionSchema = {
+      id: uuidv7(),
+      userId: auth.user.id,
+      date: existingTransaction[0].date,
+      amount: params.firstAmount,
+      categoryId: existingTransaction[0].categoryId,
+      vendor: existingTransaction[0].vendor,
+    };
+
+    await db.insert(transaction).values(newTransaction).execute();
+
+    await db.update(transaction).set({
+      ...existingTransaction[0],
+      amount: params.secondAmount,
+    });
+
+    return {
+      ok: true,
+      message: "Split transaction",
+    };
+  },
+);
+
+export const useSplitTransaction = (onSuccess?: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: splitTransaction,
+    onSettled: async () => {
+      await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["transactions", "all"],
+      });
+    },
+    onSuccess: () => onSuccess?.(),
+  });
+};
 
 // suggest category
 
@@ -32,8 +107,6 @@ export const suggestCategory = createServerFn(
         to: "/signin",
       });
     }
-
-    console.log(params);
 
     const trans = await db
       .select()

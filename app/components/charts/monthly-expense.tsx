@@ -116,16 +116,13 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
     </>
   );
 
-  console.log(totalIncomeAmounts);
-  console.log(totalExpenseAmounts);
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>
           <div className="flex items-center">
             <span>Monthly Expense Chart</span>
-            <div className="space-x-2 ml-auto">
+            <div className="md:flex gap-x-2 hidden ml-auto">
               <Button
                 disabled={months <= 1}
                 onClick={() => {

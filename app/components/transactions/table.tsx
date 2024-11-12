@@ -151,26 +151,48 @@ export const columns: ColumnDef<Transaction>[] = [
     cell: ({ row }) => {
       const orig = row.original;
 
-      const { mutateAsync } = transactionMutations.updateCategory();
+      const { mutateAsync: updateCategory } =
+        transactionMutations.updateCategory();
+      const { mutateAsync: splitTransaction } =
+        transactionMutations.splitTransaction();
+
+      let elems = [];
 
       if (orig.category === null || orig.category.id === null) {
-        return (
+        elems.push(
           <SquareFunctionIcon
             className="hover:scale-105 cursor-pointer"
             onClick={async () => {
               const res = await suggestCategory(orig.id);
 
               if (res !== null) {
-                await mutateAsync({
+                await updateCategory({
                   categoryId: res,
                   transactionId: orig.id,
                 });
               }
             }}
-          />
+          />,
         );
       }
-      return null;
+
+      if (!orig.reviewed) {
+        // todo
+        // elems.push(
+        //   <SplitIcon
+        //     onClick={() => {
+        //       splitTransaction({
+        //         transactionId: row.original.id,
+        //         firstAmount: -125,
+        //         secondAmount: row.original.amount,
+        //       });
+        //     }}
+        //     className={cn("text-gray-500", "cursor-pointer", "hover:scale-105")}
+        //   />,
+        // );
+      }
+
+      return <div className="flex gap-x-2">{elems.map((x) => x)}</div>;
     },
   },
   {
