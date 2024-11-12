@@ -44,7 +44,6 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
       `${year}-${(subMonths(new Date(), i).getMonth() + 1).toString().padStart(2, "0")}`,
     );
   }
-  console.log(validPeriods);
 
   const getAmountOfCategory = (category: string) =>
     Object.fromEntries(
@@ -64,8 +63,6 @@ export function MonthyExpenseChart(props: { numberOfMonths?: number }) {
   const totalExpenseAmounts = Object.fromEntries(
     validPeriods.map((month) => [month, 0]),
   );
-
-  console.log(getAmountOfCategory("Auto"));
 
   const tableRows = (
     <>

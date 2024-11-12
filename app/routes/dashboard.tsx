@@ -16,17 +16,13 @@ export const Route = createFileRoute("/dashboard")({
     }
 
     await Promise.all([
-      await context.queryClient.ensureQueryData(
+      context.queryClient.ensureQueryData(
         categoriesQueries.getUserCategories(),
       ),
-      await context.queryClient.ensureQueryData(
-        chartsQueries.categoryBreakdown(),
-      ),
-      await context.queryClient.ensureQueryData(
-        chartsQueries.incomeVsExpense(),
-      ),
-      await context.queryClient.ensureQueryData(chartsQueries.stats()),
-      await context.queryClient.ensureQueryData(chartsQueries.monthlyExpense()),
+      context.queryClient.ensureQueryData(chartsQueries.categoryBreakdown()),
+      context.queryClient.ensureQueryData(chartsQueries.incomeVsExpense()),
+      context.queryClient.ensureQueryData(chartsQueries.stats()),
+      context.queryClient.ensureQueryData(chartsQueries.monthlyExpense()),
     ]);
   },
 });

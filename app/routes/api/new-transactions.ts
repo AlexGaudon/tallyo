@@ -38,11 +38,6 @@ const getUnauthorized = () => {
 };
 
 export const Route = createAPIFileRoute("/api/new-transactions")({
-  GET: ({ request, params }) => {
-    console.log(request);
-    console.log(params);
-    return json({ message: 'Hello "/api/new-transactions"!' });
-  },
   POST: async ({ request }) => {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
     if (token == undefined) {
@@ -63,8 +58,6 @@ export const Route = createAPIFileRoute("/api/new-transactions")({
         status: 500,
       });
     }
-
-    console.log(parseResult.data);
 
     try {
       const res = await db
