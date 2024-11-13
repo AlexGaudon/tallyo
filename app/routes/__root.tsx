@@ -1,4 +1,4 @@
-import type { QueryClient } from "@tanstack/react-query";
+import { type QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
   Outlet,
@@ -10,6 +10,7 @@ import React from "react";
 
 import Navbar from "@/components/NavBar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { UnreviewedBanner } from "@/components/transactions/unreviewed-banner";
 import icon from "@/favicon.ico?url";
 import { getAuth } from "@/server/functions";
 import appCss from "@/styles/app.css?url";
@@ -90,6 +91,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </Head>
       <Body>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <UnreviewedBanner />
           <Navbar />
           {children}
         </ThemeProvider>

@@ -28,8 +28,6 @@ export default function Navbar() {
     from: "__root__",
   });
 
-  const { setTheme } = useTheme();
-
   return (
     <nav className="border-b">
       <div className="flex justify-between items-center px-4 lg:px-8 py-3">

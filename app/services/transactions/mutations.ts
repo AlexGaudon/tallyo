@@ -85,7 +85,7 @@ export const useSplitTransaction = (onSuccess?: () => void) => {
     onSettled: async () => {
       await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
       await queryClient.invalidateQueries({
-        queryKey: ["transactions", "all"],
+        queryKey: ["transactions"],
       });
     },
     onSuccess: () => onSuccess?.(),
@@ -209,7 +209,7 @@ export const useUpdateTransactionReviewed = (onSuccess?: () => void) => {
     onSettled: async () => {
       await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
       await queryClient.invalidateQueries({
-        queryKey: ["transactions", "all"],
+        queryKey: ["transactions"],
       });
     },
     onSuccess: () => onSuccess?.(),
@@ -313,7 +313,7 @@ export const useAddTransactionCategory = (onSuccess?: () => void) => {
     onSettled: async () => {
       await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
       await queryClient.invalidateQueries({
-        queryKey: ["transactions", "all"],
+        queryKey: ["transactions"],
       });
     },
     onSuccess: () => onSuccess?.(),

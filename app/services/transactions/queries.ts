@@ -4,7 +4,7 @@ import { category, transaction } from "@/server/db/schema";
 import { queryOptions } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { getEvent } from "vinxi/http";
 
 const transactionSelectFields = {
@@ -38,7 +38,38 @@ export const transactionQueries = {
       queryKey: ["transactions", "all"],
       queryFn: () => fetchUserTransactions(limit),
     }),
+  getUserUnreviewedCount: () =>
+    queryOptions({
+      queryKey: ["transactions", "unreviewed"],
+      queryFn: () => fetchUserUnreviewedCount(),
+    }),
 } as const;
+
+export const fetchUserUnreviewedCount = createServerFn("GET", async (ctx) => {
+  const event = getEvent();
+  const auth = event.context.auth;
+
+  if (!auth.isAuthenticated) {
+    throw redirect({
+      to: "/signin",
+      code: 400,
+    });
+  }
+
+  const unreviewed = await db
+    .select({
+      count: sql<number>`COUNT(*)`,
+    })
+    .from(transaction)
+    .where(
+      and(
+        eq(transaction.reviewed, false),
+        eq(transaction.userId, auth.user.id),
+      ),
+    );
+
+  return unreviewed[0].count ?? 0;
+});
 
 export const fetchUserTransactions = createServerFn(
   "GET",
