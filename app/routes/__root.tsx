@@ -1,11 +1,10 @@
 import { type QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
   Outlet,
   ScrollRestoration,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
-import { Body, Head, Html, Meta, Scripts } from "@tanstack/start";
+import { Meta, Scripts } from "@tanstack/start";
 import React from "react";
 
 import Navbar from "@/components/NavBar";
@@ -80,16 +79,11 @@ const TanStackQueryDevTools =
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <Html>
-      <Head>
+    <html>
+      <head>
         <Meta />
-
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
-      </Head>
-      <Body>
+      </head>
+      <body>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
           <UnreviewedBanner />
           <Navbar />
@@ -97,7 +91,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         </ThemeProvider>
         <ScrollRestoration />
         <TanStackRouterDevtools position="bottom-right" />
-        <ReactQueryDevtools buttonPosition="bottom-left" />
+        {/* <ReactQueryDevtools buttonPosition="bottom-left" /> */}
+        <TanStackQueryDevTools buttonPosition="bottom-left" />
         <Scripts />
         {/* eslint-disable-next-line @eslint-react/dom/no-dangerously-set-innerhtml */}
         <script
@@ -109,7 +104,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                     )`,
           }}
         ></script>
-      </Body>
-    </Html>
+      </body>
+    </html>
   );
 }

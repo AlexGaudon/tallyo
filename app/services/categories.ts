@@ -11,7 +11,6 @@ import { and, asc, eq } from "drizzle-orm";
 import { getEvent } from "vinxi/http";
 import { z } from "zod";
 
-import { transform } from "@/lib/utils";
 import { uuidv7 } from "uuidv7";
 
 // types
@@ -32,7 +31,9 @@ export const categoriesMutations = {
   delete: (onSuccess?: () => void) => useDeleteCategoryMutation(onSuccess),
 } as const;
 
-const fetchUserCategories = createServerFn("GET", async (_, ctx) => {
+const fetchUserCategories = createServerFn({
+  method: "GET",
+}).handler(async (ctx) => {
   const event = getEvent();
   const auth = event.context.auth;
 
@@ -49,7 +50,7 @@ const fetchUserCategories = createServerFn("GET", async (_, ctx) => {
     .where(eq(category.userId, auth.user?.id))
     .orderBy(asc(category.name));
 
-  return categories.map(transform);
+  return categories;
 });
 
 // create
@@ -61,9 +62,11 @@ export const createCategorySchema = z.object({
   treatAsIncome: z.boolean().optional(),
 });
 
-const createUserCategory = createServerFn(
-  "POST",
-  async (params: z.infer<typeof createCategorySchema>) => {
+const createUserCategory = createServerFn({
+  method: "POST",
+})
+  .validator(createCategorySchema.parse)
+  .handler(async (ctx) => {
     const event = getEvent();
     const auth = event.context.auth;
 
@@ -79,8 +82,8 @@ const createUserCategory = createServerFn(
         .values({
           id: uuidv7(),
           userId: auth.user?.id,
-          name: params.categoryName,
-          ...params,
+          name: ctx.data.categoryName,
+          ...ctx.data,
         })
         .execute();
       return json(
@@ -105,8 +108,7 @@ const createUserCategory = createServerFn(
         },
       );
     }
-  },
-);
+  });
 
 export const useCreateCategoryMutation = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
@@ -128,9 +130,9 @@ export const editCategorySchema = z.object({
   treatAsIncome: z.boolean().optional(),
 });
 
-const editUserCategory = createServerFn(
-  "POST",
-  async (params: z.infer<typeof editCategorySchema>) => {
+const editUserCategory = createServerFn({ method: "POST" })
+  .validator(editCategorySchema.parse)
+  .handler(async (ctx) => {
     const event = getEvent();
     const auth = event.context.auth;
 
@@ -144,11 +146,11 @@ const editUserCategory = createServerFn(
       await db
         .update(category)
         .set({
-          hideFromInsights: params.hideFromInsights,
-          treatAsIncome: params.treatAsIncome,
+          hideFromInsights: ctx.data.hideFromInsights,
+          treatAsIncome: ctx.data.treatAsIncome,
         })
         .where(
-          and(eq(category.id, params.id), eq(category.userId, auth.user.id)),
+          and(eq(category.id, ctx.data.id), eq(category.userId, auth.user.id)),
         )
         .execute();
 
@@ -174,8 +176,7 @@ const editUserCategory = createServerFn(
         },
       );
     }
-  },
-);
+  });
 
 export const useEditCategoryMutation = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
@@ -195,9 +196,9 @@ export const deleteCategorySchema = z.object({
   id: z.string(),
 });
 
-const deleteUserCategory = createServerFn(
-  "POST",
-  async (params: z.infer<typeof deleteCategorySchema>) => {
+const deleteUserCategory = createServerFn({ method: "POST" })
+  .validator(deleteCategorySchema.parse)
+  .handler(async (ctx) => {
     const event = getEvent();
     const auth = event.context.auth;
 
@@ -210,7 +211,7 @@ const deleteUserCategory = createServerFn(
       await db
         .delete(category)
         .where(
-          and(eq(category.id, params.id), eq(category.userId, auth.user.id)),
+          and(eq(category.id, ctx.data.id), eq(category.userId, auth.user.id)),
         )
         .execute();
 
@@ -225,8 +226,7 @@ const deleteUserCategory = createServerFn(
         message: message,
       };
     }
-  },
-);
+  });
 
 export const useDeleteCategoryMutation = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
