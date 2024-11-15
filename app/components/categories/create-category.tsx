@@ -47,8 +47,10 @@ export function CreateCategoryForm() {
         color: colors[0],
       });
       await mutateAsync({
-        categoryName: value.categoryName,
-        color: value.color,
+        data: {
+          categoryName: value.categoryName,
+          color: value.color,
+        },
       });
     },
   });

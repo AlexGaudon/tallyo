@@ -50,7 +50,9 @@ function CategoriesPage() {
                 <DangerConfirm
                   onConfirm={async () => {
                     const res = await deleteCategory({
-                      id: category.id,
+                      data: {
+                        id: category.id,
+                      },
                     });
                     toast({
                       description: res.message,
@@ -69,8 +71,10 @@ function CategoriesPage() {
                   checked={category.hideFromInsights || false}
                   onCheckedChange={(checked) => {
                     updateCategory({
-                      id: category.id,
-                      hideFromInsights: checked,
+                      data: {
+                        id: category.id,
+                        hideFromInsights: checked,
+                      },
                     });
                   }}
                 />
@@ -81,8 +85,10 @@ function CategoriesPage() {
                   checked={category.treatAsIncome || false}
                   onCheckedChange={(checked) => {
                     updateCategory({
-                      id: category.id,
-                      treatAsIncome: checked,
+                      data: {
+                        id: category.id,
+                        treatAsIncome: checked,
+                      },
                     });
                   }}
                 />

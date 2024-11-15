@@ -60,8 +60,10 @@ function CategoryPicker(props: { children: React.ReactNode; id: string }) {
                 onValueChange={async (val) => {
                   setOpen(false);
                   await mutateAsync({
-                    transactionId: props.id,
-                    categoryId: val,
+                    data: {
+                      transactionId: props.id,
+                      categoryId: val,
+                    },
                   });
                 }}
               >

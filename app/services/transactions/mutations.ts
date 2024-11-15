@@ -26,9 +26,9 @@ export const splitTransactionSchema = z.object({
   secondAmount: z.number(),
 });
 
-export const splitTransaction = createServerFn(
-  "POST",
-  async (params: z.infer<typeof splitTransactionSchema>) => {
+export const splitTransaction = createServerFn({ method: "POST" })
+  .validator(splitTransactionSchema.parse)
+  .handler(async (ctx) => {
     const event = getEvent();
     const auth = event.context.auth;
 
@@ -44,7 +44,7 @@ export const splitTransaction = createServerFn(
       .where(
         and(
           eq(transaction.userId, auth.user.id),
-          eq(transaction.id, params.transactionId),
+          eq(transaction.id, ctx.data.transactionId),
         ),
       );
 
@@ -59,7 +59,7 @@ export const splitTransaction = createServerFn(
       id: uuidv7(),
       userId: auth.user.id,
       date: existingTransaction[0].date,
-      amount: params.firstAmount,
+      amount: ctx.data.firstAmount,
       categoryId: existingTransaction[0].categoryId,
       vendor: existingTransaction[0].vendor,
     };
@@ -68,15 +68,14 @@ export const splitTransaction = createServerFn(
 
     await db.update(transaction).set({
       ...existingTransaction[0],
-      amount: params.secondAmount,
+      amount: ctx.data.secondAmount,
     });
 
     return {
       ok: true,
       message: "Split transaction",
     };
-  },
-);
+  });
 
 export const useSplitTransaction = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
@@ -96,9 +95,9 @@ export const useSplitTransaction = (onSuccess?: () => void) => {
 
 export const suggestCategorySchema = z.string();
 
-export const suggestCategory = createServerFn(
-  "POST",
-  async (params: z.infer<typeof suggestCategorySchema>) => {
+export const suggestCategory = createServerFn({ method: "POST" })
+  .validator(suggestCategorySchema.parse)
+  .handler(async (ctx) => {
     const event = getEvent();
     const auth = event.context.auth;
 
@@ -112,7 +111,7 @@ export const suggestCategory = createServerFn(
       .select()
       .from(transaction)
       .where(
-        and(eq(transaction.userId, auth.user.id), eq(transaction.id, params)),
+        and(eq(transaction.userId, auth.user.id), eq(transaction.id, ctx.data)),
       )
       .limit(1)
       .execute();
@@ -128,8 +127,7 @@ export const suggestCategory = createServerFn(
     );
 
     return suggestedCategory;
-  },
-);
+  });
 
 // update reviewed
 
@@ -138,9 +136,12 @@ export const updateReviewedSchema = z.object({
   reviewed: z.boolean(),
 });
 
-export const updateTransactionReviewed = createServerFn(
-  "POST",
-  async (params: z.infer<typeof updateReviewedSchema>) => {
+export const $updateTransactionReviewed = createServerFn({
+  method: "POST",
+})
+  .validator(updateReviewedSchema)
+  .handler(async (ctx) => {
+    console.log(ctx);
     const event = getEvent();
     const auth = event.context.auth;
 
@@ -154,11 +155,11 @@ export const updateTransactionReviewed = createServerFn(
       await db
         .update(transaction)
         .set({
-          reviewed: params.reviewed,
+          reviewed: ctx.data.reviewed,
         })
         .where(
           and(
-            eq(transaction.id, params.transactionId),
+            eq(transaction.id, ctx.data.transactionId),
             eq(transaction.userId, auth.user.id),
           ),
         )
@@ -169,14 +170,13 @@ export const updateTransactionReviewed = createServerFn(
         message: (e as Error).message,
       };
     }
-  },
-);
+  });
 
 export const useUpdateTransactionReviewed = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: updateTransactionReviewed,
-    onMutate: async (newVal) => {
+    mutationFn: $updateTransactionReviewed,
+    onMutate: async (ctx) => {
       await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
 
       const previousTransactions = queryClient.getQueryData([
@@ -188,10 +188,10 @@ export const useUpdateTransactionReviewed = (onSuccess?: () => void) => {
         ["transactions", "all"],
         (old: Transaction[] = []) => {
           return old.map((transaction) =>
-            transaction.id === newVal.transactionId
+            transaction.id === ctx.data.transactionId
               ? {
                   ...transaction,
-                  reviewed: newVal.reviewed,
+                  reviewed: ctx.data.reviewed,
                 }
               : transaction,
           );
@@ -223,9 +223,9 @@ export const addTransactionCategorySchema = z.object({
   categoryId: z.string(),
 });
 
-const addTransactionCategory = createServerFn(
-  "POST",
-  async (params: z.infer<typeof addTransactionCategorySchema>) => {
+const addTransactionCategory = createServerFn({ method: "POST" })
+  .validator(addTransactionCategorySchema.parse)
+  .handler(async (ctx) => {
     const event = getEvent();
     const auth = event.context.auth;
 
@@ -239,12 +239,12 @@ const addTransactionCategory = createServerFn(
       await db
         .update(transaction)
         .set({
-          categoryId: params.categoryId,
+          categoryId: ctx.data.categoryId,
         })
         .where(
           and(
             eq(transaction.userId, auth.user.id),
-            eq(transaction.id, params.transactionId),
+            eq(transaction.id, ctx.data.transactionId),
           ),
         )
         .execute();
@@ -257,14 +257,13 @@ const addTransactionCategory = createServerFn(
         message,
       };
     }
-  },
-);
+  });
 
 export const useAddTransactionCategory = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: addTransactionCategory,
-    onMutate: async (newVal) => {
+    onMutate: async (ctx) => {
       await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
 
       const previousTransactions = queryClient.getQueryData([
@@ -281,17 +280,17 @@ export const useAddTransactionCategory = (onSuccess?: () => void) => {
         ["transactions", "all"],
         (old: Transaction[] = []) => {
           return old.map((transaction) =>
-            transaction.id === newVal.transactionId
+            transaction.id === ctx.data.transactionId
               ? {
                   ...transaction,
                   category: {
                     ...transaction.category,
-                    id: newVal.categoryId,
+                    id: ctx.data.categoryId,
                     color:
-                      categories.find((x) => x.id === newVal.categoryId)
+                      categories.find((x) => x.id === ctx.data.categoryId)
                         ?.color || "#ee7662",
                     name:
-                      categories.find((x) => x.id === newVal.categoryId)
+                      categories.find((x) => x.id === ctx.data.categoryId)
                         ?.name || "Loading...",
                     hideFromInsights: false,
                     treatAsIncome: false,

@@ -6,7 +6,9 @@ import { createServerFn } from "@tanstack/start";
 import { and, eq, sql } from "drizzle-orm";
 import { getEvent } from "vinxi/http";
 
-export const fetchMonthlyExpenseData = createServerFn("GET", async (_, ctx) => {
+export const fetchMonthlyExpenseData = createServerFn({
+  method: "GET",
+}).handler(async (ctx) => {
   const event = getEvent();
   const auth = event.context.auth;
 

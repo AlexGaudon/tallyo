@@ -163,12 +163,16 @@ export const columns: ColumnDef<Transaction>[] = [
           <SquareFunctionIcon
             className="hover:scale-105 cursor-pointer"
             onClick={async () => {
-              const res = await suggestCategory(orig.id);
+              const res = await suggestCategory({
+                data: orig.id,
+              });
 
               if (res !== null) {
                 await updateCategory({
-                  categoryId: res,
-                  transactionId: orig.id,
+                  data: {
+                    categoryId: res,
+                    transactionId: orig.id,
+                  },
                 });
               }
             }}
@@ -207,8 +211,10 @@ export const columns: ColumnDef<Transaction>[] = [
         <CircleCheckIcon
           onClick={async () => {
             updateReviewed({
-              reviewed: !reviewed,
-              transactionId: row.original.id,
+              data: {
+                reviewed: !reviewed,
+                transactionId: row.original.id,
+              },
             });
           }}
           className={cn(
