@@ -1,5 +1,7 @@
 # Tallyo
 
+# DISCLAIMER: This is in no way meant for "production" use. It's still very early, and there may be bugs.
+
 "What is not defined cannot be measured. What is not measured, cannot be improved. What is not improved, is always degraded" - William Thomson Kelvin
 
 Tallyo is an attempt to measure personal finance, and provide you with the insights you need to hopefully make a change for the better.
