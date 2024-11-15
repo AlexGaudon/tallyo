@@ -1,3 +1,4 @@
+import { transform } from "@/lib/utils";
 import { db } from "@/server/db";
 import { category, transaction } from "@/server/db/schema";
 import { queryOptions } from "@tanstack/react-query";
@@ -111,5 +112,5 @@ export const fetchUserTransactions = createServerFn({ method: "GET" })
 
     const transactions = await query.execute();
 
-    return transactions;
+    return transactions.map(transform);
   });

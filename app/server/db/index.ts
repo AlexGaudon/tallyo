@@ -7,4 +7,4 @@ export const dbPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL as string,
 });
 
-export const db = drizzle({ client: dbPool, schema });
+export const db = drizzle({ client: dbPool, schema, logger: true });

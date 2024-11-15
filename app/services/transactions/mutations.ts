@@ -62,14 +62,21 @@ export const splitTransaction = createServerFn({ method: "POST" })
       amount: ctx.data.firstAmount,
       categoryId: existingTransaction[0].categoryId,
       vendor: existingTransaction[0].vendor,
+      externalId:
+        existingTransaction[0].externalId + "SPLIT" + ctx.data.firstAmount,
     };
+    console.log("new:", newTransaction);
+    console.log("existing:", existingTransaction[0]);
 
     await db.insert(transaction).values(newTransaction).execute();
 
-    await db.update(transaction).set({
-      ...existingTransaction[0],
-      amount: ctx.data.secondAmount,
-    });
+    await db
+      .update(transaction)
+      .set({
+        ...existingTransaction[0],
+        amount: ctx.data.secondAmount,
+      })
+      .where(eq(transaction.id, existingTransaction[0].id));
 
     return {
       ok: true,

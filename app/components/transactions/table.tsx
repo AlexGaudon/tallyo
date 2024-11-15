@@ -15,6 +15,7 @@ import {
   CircleCheckIcon,
   SortAscIcon,
   SortDescIcon,
+  SplitIcon,
   SquareFunctionIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -39,6 +40,7 @@ import {
 import { useDebounce } from "@uidotdev/usehooks";
 import { CategoryBadge } from "../categories/category-badge";
 import AmountDisplay from "./amount-display";
+import { SplitTransaction } from "./split-transaction";
 
 const getSortIcon = (column: any) => (
   <>
@@ -158,45 +160,40 @@ export const columns: ColumnDef<Transaction>[] = [
 
       let elems = [];
 
-      if (orig.category === null || orig.category.id === null) {
-        elems.push(
-          <SquareFunctionIcon
-            className="hover:scale-105 cursor-pointer"
-            onClick={async () => {
-              const res = await suggestCategory({
-                data: orig.id,
-              });
-
-              if (res !== null) {
-                await updateCategory({
-                  data: {
-                    categoryId: res,
-                    transactionId: orig.id,
-                  },
+      return (
+        <div className="flex space-x-2">
+          {!orig.reviewed && (
+            <SplitTransaction transaction={row.original}>
+              <SplitIcon
+                className={cn(
+                  "text-gray-500",
+                  "cursor-pointer",
+                  "hover:scale-105",
+                )}
+              />
+            </SplitTransaction>
+          )}
+          {(orig.category === null || orig.category.id === null) && (
+            <SquareFunctionIcon
+              className="hover:scale-105 cursor-pointer"
+              onClick={async () => {
+                const res = await suggestCategory({
+                  data: orig.id,
                 });
-              }
-            }}
-          />,
-        );
-      }
 
-      if (!orig.reviewed) {
-        // todo
-        // elems.push(
-        //   <SplitIcon
-        //     onClick={() => {
-        //       splitTransaction({
-        //         transactionId: row.original.id,
-        //         firstAmount: -125,
-        //         secondAmount: row.original.amount,
-        //       });
-        //     }}
-        //     className={cn("text-gray-500", "cursor-pointer", "hover:scale-105")}
-        //   />,
-        // );
-      }
-
-      return <div className="flex gap-x-2">{elems.map((x) => x)}</div>;
+                if (res !== null) {
+                  await updateCategory({
+                    data: {
+                      categoryId: res,
+                      transactionId: orig.id,
+                    },
+                  });
+                }
+              }}
+            />
+          )}
+        </div>
+      );
     },
   },
   {
