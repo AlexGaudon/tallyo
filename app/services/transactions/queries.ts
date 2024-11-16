@@ -105,7 +105,11 @@ export const fetchUserTransactions = createServerFn({ method: "GET" })
       .select(transactionSelectFields)
       .from(transaction)
       .where(eq(transaction.userId, auth.user?.id))
-      .orderBy(asc(transaction.reviewed), desc(transaction.date))
+      .orderBy(
+        asc(transaction.reviewed),
+        desc(transaction.date),
+        desc(transaction.createdAt),
+      )
       .leftJoin(category, eq(category.id, transaction.categoryId));
 
     if (ctx.data.limit) query.limit(ctx.data.limit);

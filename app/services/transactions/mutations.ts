@@ -16,7 +16,96 @@ export const transactionMutations = {
   updateReviewed: (onSuccess?: () => void) =>
     useUpdateTransactionReviewed(onSuccess),
   splitTransaction: () => useSplitTransaction(),
+  updateDescription: () => useUpdateTransactionDescription(),
 } as const;
+
+// edit description
+
+export const updateDescriptionSchema = z.object({
+  transactionId: z.string(),
+  description: z.string(),
+});
+
+export const updateDescription = createServerFn({ method: "POST" })
+  .validator(updateDescriptionSchema.parse)
+  .handler(async (ctx) => {
+    const event = getEvent();
+    const auth = event.context.auth;
+
+    if (!auth.isAuthenticated) {
+      throw redirect({
+        to: "/signin",
+      });
+    }
+
+    const existingTransaction = await db
+      .select()
+      .from(transaction)
+      .where(
+        and(
+          eq(transaction.userId, auth.user.id),
+          eq(transaction.id, ctx.data.transactionId),
+        ),
+      );
+
+    if (!existingTransaction || existingTransaction.length === 0) {
+      return {
+        ok: false,
+        message: "Error splitting transaction. Original transaction not found.",
+      };
+    }
+
+    await db
+      .update(transaction)
+      .set({
+        description: ctx.data.description,
+      })
+      .where(eq(transaction.id, ctx.data.transactionId));
+  });
+
+export const useUpdateTransactionDescription = (onSuccess?: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateDescription,
+    onMutate: async (ctx) => {
+      await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
+
+      const previousTransactions = queryClient.getQueryData([
+        "transactions",
+        "all",
+      ]);
+
+      queryClient.setQueryData(
+        ["transactions", "all"],
+        (old: Transaction[] = []) => {
+          return old.map((transaction) =>
+            transaction.id === ctx.data.transactionId
+              ? {
+                  ...transaction,
+                  description: ctx.data.description,
+                }
+              : transaction,
+          );
+        },
+      );
+
+      return { previousTransactions };
+    },
+    onError: (err, _, context) => {
+      queryClient.setQueryData(
+        ["transactions", "all"],
+        context?.previousTransactions,
+      );
+    },
+    onSettled: async () => {
+      await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["transactions"],
+      });
+    },
+    onSuccess: () => onSuccess?.(),
+  });
+};
 
 // split transaction
 
@@ -143,7 +232,7 @@ export const updateReviewedSchema = z.object({
   reviewed: z.boolean(),
 });
 
-export const $updateTransactionReviewed = createServerFn({
+export const updateTransactionReviewed = createServerFn({
   method: "POST",
 })
   .validator(updateReviewedSchema)
@@ -182,7 +271,7 @@ export const $updateTransactionReviewed = createServerFn({
 export const useUpdateTransactionReviewed = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: $updateTransactionReviewed,
+    mutationFn: updateTransactionReviewed,
     onMutate: async (ctx) => {
       await queryClient.cancelQueries({ queryKey: ["transactions", "all"] });
 

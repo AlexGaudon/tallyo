@@ -6,6 +6,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  RowData,
   SortingState,
   useReactTable,
   VisibilityState,
@@ -13,6 +14,7 @@ import {
 import {
   ChevronsUpDownIcon,
   CircleCheckIcon,
+  PencilIcon,
   SortAscIcon,
   SortDescIcon,
   SplitIcon,
@@ -37,10 +39,18 @@ import {
   Transaction,
   transactionMutations,
 } from "@/services/transactions";
+import { useRouter } from "@tanstack/react-router";
 import { useDebounce } from "@uidotdev/usehooks";
 import { CategoryBadge } from "../categories/category-badge";
 import AmountDisplay from "./amount-display";
 import { SplitTransaction } from "./split-transaction";
+
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    isEditing: (id: string) => boolean;
+    stopEditing: () => void;
+  }
+}
 
 const getSortIcon = (column: any) => (
   <>
@@ -71,7 +81,19 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     accessorKey: "vendor",
-    header: "Vendor",
+    header: ({ column }) => {
+      return (
+        <div>
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Vendor
+            {getSortIcon(column)}
+          </Button>
+        </div>
+      );
+    },
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("vendor")}</div>
     ),
@@ -79,11 +101,37 @@ export const columns: ColumnDef<Transaction>[] = [
   {
     accessorKey: "description",
     header: "Description",
-    cell: ({ row }) => (
-      <div className="md:w-[180px] capitalize">
-        {row.getValue("description")}
-      </div>
-    ),
+    cell: ({ row, table }) => {
+      const [value, setValue] = useState(row.original.description ?? "");
+      const { mutateAsync, isPending } =
+        transactionMutations.updateDescription();
+
+      const router = useRouter();
+      return (
+        <>
+          {table.options.meta?.isEditing(row.original.id) ? (
+            <Input
+              value={value}
+              disabled={isPending}
+              onChange={(e) => setValue(e.target.value)}
+              onBlur={() => {
+                mutateAsync({
+                  data: {
+                    description: value,
+                    transactionId: row.original.id,
+                  },
+                });
+                table.options.meta?.stopEditing();
+              }}
+            />
+          ) : (
+            <div className="md:w-[180px] capitalize">
+              {row.getValue("description")}
+            </div>
+          )}
+        </>
+      );
+    },
   },
   {
     accessorKey: "amount",
@@ -112,17 +160,7 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     accessorKey: "category",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Category
-          {getSortIcon(column)}
-        </Button>
-      );
-    },
+    header: "Category",
     cell: ({ row }) => {
       const reviewed = row.original.reviewed;
       const category = row.getValue("category") as Category | null;
@@ -155,10 +193,6 @@ export const columns: ColumnDef<Transaction>[] = [
 
       const { mutateAsync: updateCategory } =
         transactionMutations.updateCategory();
-      const { mutateAsync: splitTransaction } =
-        transactionMutations.splitTransaction();
-
-      let elems = [];
 
       return (
         <div className="flex space-x-2">
@@ -269,6 +303,8 @@ export function TransactionTable(props: {
     applyFiltersAndSorting();
   }, [typeToShow, debouncedValue, props.data]);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   const table = useReactTable({
     data: tableData,
     columns,
@@ -293,6 +329,11 @@ export function TransactionTable(props: {
       columnFilters,
       columnVisibility,
       rowSelection,
+    },
+    meta: {
+      isEditing: (id: string) =>
+        editingId === null ? false : id === editingId,
+      stopEditing: () => setEditingId(null),
     },
   });
 
@@ -327,33 +368,6 @@ export function TransactionTable(props: {
           >
             {typeToShow === "all" ? "Show Unreviewed" : "Show All"}
           </Button>
-
-          {/* <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columns <ChevronDownIcon className="ml-2 w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu> */}
         </div>
         <div className="border rounded-md">
           <Table>
@@ -390,6 +404,16 @@ export function TransactionTable(props: {
                         )}
                       </TableCell>
                     ))}
+                    <TableCell>
+                      {!table.options.meta?.isEditing(row.original.id) && (
+                        <PencilIcon
+                          onClick={() => {
+                            setEditingId(row.original.id);
+                          }}
+                          className="w-4 h-4"
+                        />
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
